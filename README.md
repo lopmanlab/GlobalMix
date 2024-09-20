@@ -13,7 +13,7 @@
 
 # Description of repository
 This repository contains data, scripts, and a summary of questionnaires.
-Folders are arranged as following.
+Folders are arranged as follows.
 1. Guatemala
 2. India
 3. Mozambique
