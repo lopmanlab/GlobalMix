@@ -8,8 +8,8 @@
 
 # Description of study
 **Aim**
-1. Comprehensively
-2. Using sensor,
+1. Characterize the patterns of social contact across the age range in urban and rural settings in low- and middle-income settings using standardized social contact diaries.
+2. Comprehensively profile the social contacts of young infants with their household members using wearable proximity sensing devices.
 
 # Description of repository
 This repository contains data, scripts, and a summary of questionnaires.
