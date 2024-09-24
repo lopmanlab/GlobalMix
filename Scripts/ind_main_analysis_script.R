@@ -23,14 +23,14 @@ table(in.pa$participant_sex, in.pa$study_site, useNA = 'always')
 in.pa %>%
   subset(!participant_age %in% c("<6mo", "6-11mo", "1-4y")) -> in.pa.notkids
 nrow(in.pa.notkids) #896
-table(in.pa.notkids$high_educ_std, in.pa.notkids$study_site, useNA = 'always')
+table(in.pa.notkids$high_educ, in.pa.notkids$study_site, useNA = 'always')
 
 #Occupation
 #restrict to adults only
 in.pa %>%
   subset(!participant_age %in% c("<6mo", "6-11mo", "1-4y", "5-9y")) -> in.pa.adults
 nrow(in.pa.adults) #770
-table(in.pa.adults$occup_std, in.pa.adults$study_site, useNA = 'always')
+table(in.pa.adults$occupation, in.pa.adults$study_site, useNA = 'always')
 
 #HH size by site
 table(in.pa$hh_size_cat, in.pa$study_site, useNA = 'always')
@@ -190,7 +190,7 @@ in.co.pa %>%
 
 # Contact by site and education - DAY 1 ONLY
 in.co.pa %>%
-  group_by(study_site, high_educ_std) %>%
+  group_by(study_site, high_educ) %>%
   summarise(mean = mean(num_contacts, na.rm = T), 
             sd = sd(num_contacts, na.rm = T),
             median = median(num_contacts, na.rm = T), 
@@ -200,7 +200,7 @@ in.co.pa %>%
 
 # Contact by site and occupation - DAY 1 ONLY
 in.co.pa %>%
-  group_by(study_site, occup_std) %>%
+  group_by(study_site, occupation) %>%
   summarise(mean = mean(num_contacts, na.rm = T), 
             sd = sd(num_contacts, na.rm = T),
             median = median(num_contacts, na.rm = T), 
