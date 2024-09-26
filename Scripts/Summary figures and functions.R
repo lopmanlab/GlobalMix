@@ -78,12 +78,12 @@ adjust_for_reciprocity <- function(df, denoms) {
 # FIGURE 1
 ########################
 
-ggarrange(gt.co.pa.byage.plot, in.co.pa.byage.plot, mo.co.pa.byage.plot, pa.co.pa.byage.plot, 
-          mat.gt.o.sym,  mat.in.o.sym, mat.mo.o.sym, mat.pa.o.sym,
-          loc.gt, loc.in, loc.mo, loc.pa,
-          nrow = 3, ncol = 4) -> fig1
-fig1
-
+ggarrange(
+  ggarrange(gt.co.pa.byage.plot, in.co.pa.byage.plot, mo.co.pa.byage.plot, pa.co.pa.byage.plot, ncol = 4, labels = "A"),
+  ggarrange(mat.gt.o.sym, mat.in.o.sym, mat.mo.o.sym, mat.pa.o.sym, ncol = 4, labels = "B"),
+  ggarrange(loc.gt, loc.in, loc.mo, loc.pa, ncol = 4, labels = "C"),
+  nrow = 3
+) -> fig1
 
 ########################
 # FIGURE 2

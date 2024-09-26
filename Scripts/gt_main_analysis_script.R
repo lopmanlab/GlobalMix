@@ -227,7 +227,7 @@ gt.co.pa %>%
         legend.justification = c("right", "top"),
         legend.box.just = "right",
         legend.margin = margin(6, 6, 6, 6),
-        axis.text.x = element_text(size = 7)) +
+        axis.text = element_text(size = 7)) +
   scale_x_discrete(labels = label_wrap(10)) -> gt.co.pa.byage.plot
 
 
@@ -268,13 +268,14 @@ gt.co.pa.counts.formatrix.o.sym  %>%
   theme(legend.position = "bottom",
         axis.text.x = element_text(size = 7)) +
   scale_fill_distiller(palette = "Spectral", limits=c(0, 5), name = "daily contacts") +
-  geom_tile(color = "white", show.legend = FALSE,
+  geom_tile(color = "white",show.legend = FALSE,
             lwd = 1.5,
             linetype = 1) +
   geom_text(aes(label = round(c.rate.sym, digits = 1)), color = "white", size = 3) +
   xlab("") +
   ylab("Contact age") +
-  scale_x_discrete(labels = label_wrap(10)) -> mat.gt.o.sym
+  scale_x_discrete(labels = label_wrap(10))+
+  theme(axis.text = element_text(size = 7))-> mat.gt.o.sym
 
 
 # Figure 1C
@@ -286,7 +287,8 @@ gt.co.pa.counts  %>%
   xlab("Participant Age") +
   ylab("Prop contacts") +
   scale_x_discrete(labels = label_wrap(10)) +
-  theme(axis.text.x = element_text(size = 7)) -> loc.gt
+  theme(axis.text = element_text(size = 7),
+        legend.title = element_blank()) -> loc.gt
 
 
 ######################
