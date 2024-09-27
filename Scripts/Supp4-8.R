@@ -18,16 +18,26 @@ gt_contact <- readRDS("./Guatemala/gt_contact_data_aim1.RDS")
 pak_participant <- readRDS("./Pakistan/pak_participant_data_aim1.RDS")
 pak_contact <- readRDS("./Pakistan/pak_contact_data_aim1.RDS")
 
-####### Check this part ##############
 # Read stringency data
-stringency <- read.csv("./stringency_detail.csv", header = T)
+
+# Stringency data is obtained from Oxford COVID-19 Government Response Tracker, 
+# Blavatnik School of Government, University of Oxford.
+# Full credit in README file.
+# The specific dataset used for this analysis is accessed via link below.
+# https://github.com/OxCGRT/covid-policy-dataset/blob/main/data/OxCGRT_compact_national_v1.csv
+
+stringency <- read.csv("./Other/OxCGRT_compact_national_v1.csv", header = T)
 stringency <- stringency%>%
   mutate(Date = ymd(Date))
 
-# Read Prem data
-p_contact <- read.csv("./Prem_dataset/synthetic_contacts_2021.csv", header = T)
-########################################
 
+# Read Prem data
+
+# Dataset is obtained from Prem et al. (2021) 
+# Full credit in README file.
+# The specific dataset used for this analysis is accessed via link below.
+# https://github.com/kieshaprem/synthetic-contact-matrices/blob/master/generate_synthetic_matrices/output/syntheticmatrices/synthetic_contacts_2021.csv
+p_contact <- read.csv("./Other/synthetic_contacts_2021.csv", header = T)
 
 ###########################
 ## Supplemental Figure 4 ##
