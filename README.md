@@ -23,8 +23,8 @@ Folders are arranged as follows.
 6. Scripts
 7. Codebook
 
-Each country contains participants and contact diary datasets. The other folder has datasets from previous studies used for the analysis.
-The scripts folder has scripts used for the analysis of published papers. The Codebook folder has codebooks explaining the variables in the datasets.
+Each country contains participants and contact diary datasets. The other folder has other datasets used for the analysis.
+The scripts folder has scripts used for the analysis of the published paper. The Codebook folder has codebooks explaining the variables in the datasets.
 
 The GlobalMix datasets are named as follows;
 - country-code_participant_data_aim.RDS
@@ -41,7 +41,8 @@ The datasets from previous studies used for this analysis are as follows;
 1. Load the packages and run the functions in the "Summary figures and functions" file.
 2. Run the code in the "(countrycode)_main_analysis_script" file.
 3. If needed, code for creating multipanel summary figures is in the "Summary figures and functions" file, which can be used after running all the country's main analysis code.
-4. For modeling outputs and figure 3, please see "(countrycode)_model" file, and for supplemental figures 4-8, please see "Supp4-8" file.
+4. For modeling outputs, please see "(countrycode)_model" file. For figure 3, please see the "figure3" file that uses the csv files containing the outputs from the model.
+5. For supplemental figures 4-8, please see "Supp4-8" file.
 
 ## Reference
 1. Aguolu OG, Kiti MC, Nelson K, et al. Comprehensive profiling of social mixing patterns in resource poor countries: A mixed methods research protocol. PLOS ONE. 2024;19(6):e0301638. doi:10.1371/journal.pone.0301638
