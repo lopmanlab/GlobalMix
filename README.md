@@ -4,7 +4,7 @@
 *<sup>1</sup> Emory University*
 *<sup>2</sup> University of Texas SouthWestern*
 
-*Correspondence to: blopman@emory.edu;*
+*Correspondence to Ben Lopman (blopman@emory.edu)*
 
 # Description of study
 **Aim**
@@ -13,7 +13,7 @@
 The protocol that contains the detailed data collection procedure is explained in Aguolu et al (2024).<sup>1</sup>
 
 # Description of repository
-This repository contains data, scripts, and a summary of questionnaires.
+This repository contains data, scripts, and questionnaires.
 Folders are arranged as follows.
 1. Guatemala
 2. India
@@ -23,10 +23,10 @@ Folders are arranged as follows.
 6. Scripts
 7. Codebook
 
-Each country contains participants and contact diary datasets. The other folder has other datasets used for the analysis.
-The scripts folder has scripts used for the analysis of the published paper. The Codebook folder has codebooks explaining the variables in the datasets.
+Each country folder contains 'participants' and 'contact diary' datasets, which contain information about the study participants and their reported contacts, respectively. The Other folder contains the clean datasets used for the analysis.
+The scripts folder has scripts used for the analysis of the [insert manuscript information here]. The Codebook folder contains codebooks explaining the variables in the datasets.
 
-The GlobalMix datasets are named as follows;
+The participant and contact diary datasets are named as follows;
 - country-code_participant_data_aim.RDS
 - country-code_contact_data_aim.RDS
 
