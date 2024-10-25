@@ -1,12 +1,12 @@
 # Supplemental figures 4-8
 
 # Load package
-library(dplyr)
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
 library(grid)
 library(tidyr)
+pacman::p_load(dplyr, lubridate, ggplot2, gridExtra, grid, tidyr)
 
 # Read the GM data
 moz_participant <- readRDS("./Mozambique/moz_participant_data_aim1.RDS")
@@ -18,25 +18,70 @@ gt_contact <- readRDS("./Guatemala/gt_contact_data_aim1.RDS")
 pak_participant <- readRDS("./Pakistan/pak_participant_data_aim1.RDS")
 pak_contact <- readRDS("./Pakistan/pak_contact_data_aim1.RDS")
 
+# Read population age structure
+mo.we <- read.csv("./Other/moz_pop.csv")
+in.we <- read.csv("./Other/ind_pop.csv")
+gt.we <- read.csv("./Other/gt_pop.csv")
+pa.we <- read.csv("./Other/pak_pop.csv")
+
+# Calculate age weight
+mo.pa.we <- moz_participant%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  group_by(study_site, participant_age)%>%
+  summarise(n_s = n())%>%
+  mutate(prop_s = n_s/sum(n_s))
+
+mo.we <- mo.we%>%
+  left_join(mo.pa.we, by = c("participant_age", "study_site"))%>%
+  mutate(psweight = prop/prop_s)
+
+in.pa.we <- ind_participant%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<1y",
+                                     participant_age == "6-11mo" ~ "<1y",
+                                     TRUE ~ participant_age))%>%
+  group_by(study_site, participant_age)%>%
+  summarise(n_s = n())%>%
+  mutate(prop_s = n_s/sum(n_s))
+
+in.we <- in.we%>%
+  left_join(in.pa.we, by = c("participant_age", "study_site"))%>%
+  mutate(psweight = prop/prop_s)
+
+gt.pa.we <- gt_participant%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  group_by(study_site, participant_age)%>%
+  summarise(n_s = n())%>%
+  mutate(prop_s = n_s/sum(n_s))
+
+gt.we <- gt.we%>%
+  left_join(gt.pa.we, by = c("participant_age", "study_site"))%>%
+  mutate(psweight = prop/prop_s)
+
+pa.pa.we <- pak_participant%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  group_by(study_site, participant_age)%>%
+  summarise(n_s = n())%>%
+  mutate(prop_s = n_s/sum(n_s))
+
+pa.we <- pa.we%>%
+  left_join(pa.pa.we, by = c("participant_age", "study_site"))%>%
+  mutate(psweight = prop/prop_s)
+
 # Read stringency data
-
-# Stringency data is obtained from Oxford COVID-19 Government Response Tracker, 
-# Blavatnik School of Government, University of Oxford.
-# Full credit in README file.
-# The specific dataset used for this analysis is accessed via link below.
-# https://github.com/OxCGRT/covid-policy-dataset/blob/main/data/OxCGRT_compact_national_v1.csv
-
 stringency <- read.csv("./Other/OxCGRT_compact_national_v1.csv", header = T)
 stringency <- stringency%>%
   mutate(Date = ymd(Date))
 
-
 # Read Prem data
-
-# Dataset is obtained from Prem et al. (2021) 
-# Full credit in README file.
-# The specific dataset used for this analysis is accessed via link below.
-# https://github.com/kieshaprem/synthetic-contact-matrices/blob/master/generate_synthetic_matrices/output/syntheticmatrices/synthetic_contacts_2021.csv
 p_contact <- read.csv("./Other/synthetic_contacts_2021.csv", header = T)
 
 ###########################
@@ -46,20 +91,16 @@ p_contact <- read.csv("./Other/synthetic_contacts_2021.csv", header = T)
 ## Edit the stringency index data
 moz_stringency <- stringency%>%
   filter(CountryName == "Mozambique")%>%
-  mutate(date_participant_enrolled = ymd(Date),
-         Date = ymd(Date))
+  mutate(date_participant_enrolled = ymd(Date))
 ind_stringency <- stringency%>%
   filter(CountryName == "India")%>%
-  mutate(date_participant_enrolled = ymd(Date),
-         Date = ymd(Date))
+  mutate(date_participant_enrolled = ymd(Date))
 gt_stringency <- stringency%>%
   filter(CountryName == "Guatemala")%>%
-  mutate(date_participant_enrolled = ymd(Date),
-         Date = ymd(Date))
+  mutate(date_participant_enrolled = ymd(Date))
 pak_stringency <- stringency%>%
   filter(CountryName == "Pakistan")%>%
-  mutate(date_participant_enrolled = ymd(Date),
-         Date = ymd(Date))
+  mutate(date_participant_enrolled = ymd(Date))
 
 
 ## Mozambique
@@ -165,7 +206,8 @@ pak_str_part_plot <- ggplot(pak_part_count, aes(x = date_participant_enrolled))+
         plot.background = element_rect(color = "white"))
 
 
-str_plot <- grid.arrange(moz_str_part_plot, gt_str_part_plot, ind_str_part_plot, pak_str_part_plot, ncol = 1,
+str_plot <- grid.arrange(moz_str_part_plot, gt_str_part_plot, ind_str_part_plot, pak_str_part_plot, ncol = 1, 
+                         #top = textGrob("A", x = 0, just = "left", gp = gpar(fontsize = 30)),
                          left = textGrob("Number of participants", rot = 90, just = "centre", gp = gpar(fontsize = 20)),
                          right = textGrob("Stringency Index (Average)", rot = 270, just = "centre", gp = gpar(fontsize = 20)),
                          bottom = textGrob("Participant enrollment date", just = "centre", gp = gpar(fontsize = 20)))
@@ -176,11 +218,11 @@ str_plot <- grid.arrange(moz_str_part_plot, gt_str_part_plot, ind_str_part_plot,
 
 # School closure
 gt_school <- gt_stringency%>%
-  mutate(C1M_School.closing = ifelse(C1M_School.closing == 0, 0, 1) # Classify the measurement to either no or some/full measurement
-         )%>%
+  mutate(C1M_School.closing = ifelse(C1M_School.closing == 0, 0, 1),
+         Date = ymd(Date))%>%
   mutate(Status_change = C1M_School.closing != lag(C1M_School.closing, default = first(C1M_School.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
-  mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1))%>%
+  mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
   select(Start_date = Date, End_date, Status = C1M_School.closing)
 
 ind_school <- ind_stringency%>%
@@ -548,8 +590,8 @@ gm_moz_table_prep <- moz_contact%>%
   group_by(rec_id, participant_age)%>%
   summarise(num_contacts = n())%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())
 
 gm_moz_table <- moz_contact%>%
@@ -558,8 +600,8 @@ gm_moz_table <- moz_contact%>%
   summarise(num_contacts = n())%>%
   filter(participant_age %in% c("5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"))%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())%>%
   bind_rows(gm_moz_table_prep)%>%
   mutate(lower_ci = contact_rate - 1.96 * sd/sqrt(n), # Lower bound of 95% CI
@@ -576,8 +618,8 @@ gm_ind_table_prep <- ind_contact%>%
   group_by(rec_id, participant_age)%>%
   summarise(num_contacts = n())%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())
 
 gm_ind_table <- ind_contact%>%
@@ -586,8 +628,8 @@ gm_ind_table <- ind_contact%>%
   summarise(num_contacts = n())%>%
   filter(participant_age %in% c("5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"))%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())%>%
   bind_rows(gm_ind_table_prep)%>%
   mutate(lower_ci = contact_rate - 1.96 * sd/sqrt(n), # Lower bound of 95% CI
@@ -604,8 +646,8 @@ gm_gt_table_prep <- gt_contact%>%
   group_by(rec_id, participant_age)%>%
   summarise(num_contacts = n())%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())
 
 gm_gt_table <- gt_contact%>%
@@ -614,8 +656,8 @@ gm_gt_table <- gt_contact%>%
   summarise(num_contacts = n())%>%
   filter(participant_age %in% c("5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"))%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())%>%
   bind_rows(gm_gt_table_prep)%>%
   mutate(lower_ci = contact_rate - 1.96 * sd/sqrt(n), # Lower bound of 95% CI
@@ -633,8 +675,8 @@ gm_pak_table_prep <- pak_contact%>%
   group_by(rec_id, participant_age)%>%
   summarise(num_contacts = n())%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())
 
 gm_pak_table <- pak_contact%>%
@@ -643,8 +685,8 @@ gm_pak_table <- pak_contact%>%
   summarise(num_contacts = n())%>%
   filter(participant_age %in% c("5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"))%>%
   group_by(participant_age)%>%
-  summarise(contact_rate = mean(num_contacts),
-            sd = sd(num_contacts, na.rm = T),
+  summarise(contact_rate = mean(num_contacts/2),
+            sd = sd(num_contacts/2, na.rm = T),
             n = n())%>%
   bind_rows(gm_pak_table_prep)%>%
   mutate(lower_ci = contact_rate - 1.96 * sd/sqrt(n), # Lower bound of 95% CI
@@ -678,32 +720,32 @@ gm_pak_table$age_midpoint <- sapply(gm_pak_table$participant_age, get_midpoint)
 
 # Add a source column to distinguish between the datasets
 p_ind_table <- p_ind_table%>%
-  mutate(dataset = "Prem",
+  mutate(dataset = "Prem et al., 2021",
          lower_ci = NA,
          upper_ci = NA)
 p_moz_table <- p_moz_table%>%
-  mutate(dataset = "Prem",
+  mutate(dataset = "Prem et al., 2021",
          lower_ci = NA,
          upper_ci = NA)
 p_gt_table <- p_gt_table%>%
-  mutate(dataset = "Prem",
+  mutate(dataset = "Prem et al., 2021",
          lower_ci = NA,
          upper_ci = NA)
 p_pak_table <- p_pak_table%>%
-  mutate(dataset = "Prem",
+  mutate(dataset = "Prem et al., 2021",
          lower_ci = NA,
          upper_ci = NA)
 gm_ind_table <- gm_ind_table%>%
-  mutate(dataset = "GlobalMix")%>%
+  mutate(dataset = "Current study")%>%
   select(participant_age, contact_rate, country, age_midpoint, dataset, lower_ci, upper_ci)
 gm_moz_table<- gm_moz_table%>%
-  mutate(dataset = "GlobalMix")%>%
+  mutate(dataset = "Current study")%>%
   select(participant_age, contact_rate, country, age_midpoint, dataset, lower_ci, upper_ci)
 gm_gt_table <- gm_gt_table%>%
-  mutate(dataset = "GlobalMix")%>%
+  mutate(dataset = "Current study")%>%
   select(participant_age, contact_rate, country, age_midpoint, dataset, lower_ci, upper_ci)
 gm_pak_table<- gm_pak_table%>%
-  mutate(dataset = "GlobalMix")%>%
+  mutate(dataset = "Current study")%>%
   select(participant_age, contact_rate, country, age_midpoint, dataset, lower_ci, upper_ci)
 
 # Combine the datasets
@@ -719,7 +761,7 @@ ind_age_plot <- ggplot(ind_age_table, aes(x = age_midpoint, y = contact_rate, co
   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
   scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
   scale_y_continuous("Contact Rate") +
-  ylim(0, 31.5)+
+  ylim(0, 25)+
   labs(title = "India",
        color = "Dataset") +
   ylab("Contact Rate")+
@@ -736,7 +778,7 @@ gt_age_plot <- ggplot(gt_age_table, aes(x = age_midpoint, y = contact_rate, colo
   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
   scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
   scale_y_continuous("Contact Rate") +
-  ylim(0,31.5)+
+  ylim(0,25)+
   labs(title = "Guatemala",
        color = "Dataset") +
   ylab("Contact Rate")+
@@ -753,7 +795,7 @@ moz_age_plot <- ggplot(moz_age_table, aes(x = age_midpoint, y = contact_rate, co
   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
   scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
   scale_y_continuous("Contact Rate") +
-  ylim(0,31.5)+
+  ylim(0,25)+
   labs(title = "Mozambique",
        color = "Dataset") +
   ylab("Contact Rate")+
@@ -770,7 +812,7 @@ pak_age_plot <- ggplot(pak_age_table, aes(x = age_midpoint, y = contact_rate, co
   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
   scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
   scale_y_continuous("Contact Rate") +
-  ylim(0,31.5)+
+  ylim(0,25)+
   labs(title = "Pakistan",
        color = "Dataset") +
   ylab("Contact Rate")+
@@ -793,182 +835,332 @@ age_line_plot <- grid.arrange(ind_age_plot, gt_age_plot,moz_age_plot, pak_age_pl
 
 # Panel B
 # Prepare Prem data
-
 p_moz_school <- p_contact%>%
-  filter(iso3c == "MOZ" & setting == "overall" & location_contact == "school")%>% #choose overall (rural and urban) setting
+  filter(iso3c == "MOZ" & setting == "overall" & location_contact == "school")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>% #rename to match GlobalMix data
-  mutate(location = "School")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_ind_school <- p_contact%>%
   filter(iso3c == "IND" & setting == "overall" & location_contact == "school")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "School")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_gt_school <- p_contact%>%
   filter(iso3c == "GTM" & setting == "overall" & location_contact == "school")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "School")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_pak_school <- p_contact%>%
   filter(iso3c == "PAK" & setting == "overall" & location_contact == "school")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "School")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 
 p_moz_work <- p_contact%>%
   filter(iso3c == "MOZ" & setting == "overall" & location_contact == "work")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Work")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_ind_work <- p_contact%>%
   filter(iso3c == "IND" & setting == "overall" & location_contact == "work")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Work")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_gt_work <- p_contact%>%
   filter(iso3c == "GTM" & setting == "overall" & location_contact == "work")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Work")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_pak_work <- p_contact%>%
   filter(iso3c == "PAK" & setting == "overall" & location_contact == "work")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Work")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 
 p_moz_home <- p_contact%>%
   filter(iso3c == "MOZ" & setting == "overall" & location_contact == "home")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Home")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_ind_home <- p_contact%>%
   filter(iso3c == "IND" & setting == "overall" & location_contact == "home")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Home")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_gt_home <- p_contact%>%
   filter(iso3c == "GTM" & setting == "overall" & location_contact == "home")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Home")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_pak_home <- p_contact%>%
   filter(iso3c == "PAK" & setting == "overall" & location_contact == "home")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Home")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 
 p_moz_other <- p_contact%>%
   filter(iso3c == "MOZ" & setting == "overall" & location_contact == "others")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Other")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_ind_other <- p_contact%>%
   filter(iso3c == "IND" & setting == "overall" & location_contact == "others")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Other")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_gt_other <- p_contact%>%
   filter(iso3c == "GTM" & setting == "overall" & location_contact == "others")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Other")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 p_pak_other <- p_contact%>%
   filter(iso3c == "PAK" & setting == "overall" & location_contact == "others")%>%
   rename(country = iso3c,
-         contact_rate = mean_number_of_contacts)%>%
-  mutate(location = "Other")
+         participant_age = age_contactor,
+         contact_age = age_cotactee,
+         contact_rate = mean_number_of_contacts)
 
+# Combine the location
+## India
+p_ind_home_lab <- p_ind_home%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Home")
+p_ind_school_lab <- p_ind_school%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "School")
+p_ind_work_lab <- p_ind_work%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Work")
+p_ind_other_lab <- p_ind_other%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Other")
 
-# Combine all the location and calculate proportion of contacts in each location
-p_ind_loc <- rbind(p_ind_home, p_ind_school, p_ind_work, p_ind_other)%>%
+p_ind_loc <- rbind(p_ind_home_lab, p_ind_school_lab, p_ind_work_lab, p_ind_other_lab)%>%
   group_by(location)%>%
   summarise(contact_rate = sum(contact_rate))%>%
   mutate(contact_rate_tot = sum(contact_rate),
-         percentage = contact_rate/contact_rate_tot*100,
+         percentage = contact_rate/contact_rate_tot,
          country = "India")
 
-p_gt_loc <- rbind(p_gt_home, p_gt_school, p_gt_work, p_gt_other)%>%
+## Guatemala
+p_gt_home_lab <- p_gt_home%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Home")
+p_gt_school_lab <- p_gt_school%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "School")
+p_gt_work_lab <- p_gt_work%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Work")
+p_gt_other_lab <- p_gt_other%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Other")
+
+p_gt_loc <- rbind(p_gt_home_lab, p_gt_school_lab, p_gt_work_lab, p_gt_other_lab)%>%
   group_by(location)%>%
   summarise(contact_rate = sum(contact_rate))%>%
   mutate(contact_rate_tot = sum(contact_rate),
-         percentage = contact_rate/contact_rate_tot*100,
+         percentage = contact_rate/contact_rate_tot,
          country = "Guatemala")
 
-p_moz_loc <- rbind(p_moz_home, p_moz_school, p_moz_work, p_moz_other)%>%
+## Mozambique
+p_moz_home_lab <- p_moz_home%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Home")
+p_moz_school_lab <- p_moz_school%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "School")
+p_moz_work_lab <- p_moz_work%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Work")
+p_moz_other_lab <- p_moz_other%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Other")
+
+p_moz_loc <- rbind(p_moz_home_lab, p_moz_school_lab, p_moz_work_lab, p_moz_other_lab)%>%
   group_by(location)%>%
   summarise(contact_rate = sum(contact_rate))%>%
   mutate(contact_rate_tot = sum(contact_rate),
-         percentage = contact_rate/contact_rate_tot*100,
+         percentage = contact_rate/contact_rate_tot,
          country = "Mozambique")
 
-p_pak_loc <- rbind(p_pak_home, p_pak_school, p_pak_work, p_pak_other)%>%
+## Pakistan
+p_pak_home_lab <- p_pak_home%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Home")
+p_pak_school_lab <- p_pak_school%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "School")
+p_pak_work_lab <- p_pak_work%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Work")
+p_pak_other_lab <- p_pak_other%>%
+  mutate(participant_age = gsub(" to ", "-", participant_age),
+         participant_age = ifelse(participant_age == "75+", "75+y", paste0(participant_age, "y")),
+         contact_age = gsub(" to ", "-", contact_age),
+         contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")),
+         location = "Other")
+
+p_pak_loc <- rbind(p_pak_home_lab, p_pak_school_lab, p_pak_work_lab, p_pak_other_lab)%>%
   group_by(location)%>%
   summarise(contact_rate = sum(contact_rate))%>%
   mutate(contact_rate_tot = sum(contact_rate),
-         percentage = contact_rate/contact_rate_tot*100,
+         percentage = contact_rate/contact_rate_tot,
          country = "Pakistan")
 
 # Combine four country
 p_com_loc <- rbind(p_moz_loc, p_ind_loc, p_gt_loc, p_pak_loc)%>%
   mutate(location = factor(location, levels = c("Home", "School", "Work", "Other")),
-         dataset = "Prem")%>%
-  select(country, location, percentage, dataset)
+         dataset = "Prem et al., 2021")
 
-# Prepare GlobalMix data
+# GlobalMix
 moz_location <- moz_contact%>%
-  mutate(location = case_when(location == "Market / essential" ~ "Other",
+  mutate(location = case_when(location == "Transit" ~ "Other",
+                              location == "Market / essential" ~ "Other",
                               location == "Other social / leisure" ~ "Other",
-                              location == "Transit" ~ "Other",
-                              location == "Worship" ~ "Other",
-                              TRUE ~ location))%>% # Classify the other contacts into other group to match Prem data
-  select(rec_id, location)%>%
-  mutate(country = "Mozambique")
-
-ind_location <- ind_contact%>%
-  mutate(location = case_when(location == "Market / essential" ~ "Other",
-                              location == "Other social / leisure" ~ "Other",
-                              location == "Transit" ~ "Other",
                               location == "Worship" ~ "Other",
                               TRUE ~ location))%>%
-  select(rec_id, location)%>%
+  left_join(moz_participant, by = "rec_id")%>%
+  rename(study_site = study_site.x)%>%
+  select(rec_id, study_site, participant_age, participant_sex, contact_age, contact_sex, location)%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(mo.we, by = c("participant_age", "study_site"))%>%
+  mutate(country = "Mozambique",
+         rec_id = as.character(rec_id))
+
+ind_location <- ind_contact%>%
+  mutate(location = case_when(location == "Transit" ~ "Other",
+                              location == "Market / essential" ~ "Other",
+                              location == "Other social / leisure" ~ "Other",
+                              location == "Worship" ~ "Other",
+                              TRUE ~ location))%>%
+  left_join(ind_participant, by = "rec_id")%>%
+  rename(study_site = study_site.x)%>%
+  select(rec_id, study_site, participant_age, participant_sex, contact_age, contact_sex, location)%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<1y",
+                                     participant_age == "6-11mo" ~ "<1y",
+                                     TRUE ~ participant_age))%>%
+  left_join(in.we, by = c("participant_age", "study_site"))%>%
   mutate(country = "India")
 
 gt_location <- gt_contact%>%
-  mutate(location = case_when(location == "Market / essential" ~ "Other",
+  mutate(location = case_when(location == "Transit" ~ "Other",
+                              location == "Market / essential" ~ "Other",
                               location == "Other social / leisure" ~ "Other",
-                              location == "Transit" ~ "Other",
                               location == "Worship" ~ "Other",
                               TRUE ~ location))%>%
-  select(rec_id, location)%>%
+  left_join(gt_participant, by = "rec_id")%>%
+  rename(study_site = study_site.x)%>%
+  select(rec_id, study_site, participant_age, participant_sex, contact_age, contact_sex, location)%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(gt.we, by = c("participant_age", "study_site"))%>%
   mutate(country = "Guatemala")
 
 pak_location <- pak_contact%>%
-  mutate(location = case_when(location == "Market / essential" ~ "Other",
+  mutate(location = case_when(location == "Transit" ~ "Other",
+                              location == "Market / essential" ~ "Other",
                               location == "Other social / leisure" ~ "Other",
-                              location == "Transit" ~ "Other",
                               location == "Worship" ~ "Other",
                               TRUE ~ location))%>%
-  select(rec_id, location)%>%
+  left_join(pak_participant, by = "rec_id")%>%
+  rename(study_site = study_site.x)%>%
+  select(rec_id, study_site, participant_age, participant_sex, contact_age, contact_sex, location)%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(pa.we, by = c("participant_age", "study_site"))%>%
   mutate(country = "Pakistan")
 
 gm_com_loc <- rbind(moz_location, ind_location, gt_location, pak_location)%>%
   mutate(location = factor(location, levels = c("Home", "School", "Work", "Other", "Unreported")))%>%
+  filter(!is.na(psweight))%>%
+  as_survey(weights = c(psweight))%>%
   group_by(country, location)%>%
-  summarise(count = n())%>%
-  mutate(percentage = count/sum(count)*100,
-         dataset = "GlobalMix")%>%
-  select(country, location, percentage, dataset)
+  summarise(count = survey_total())%>%
+  mutate(percentage = count/sum(count),
+         dataset = "Current study")
 
 # Combine the two datasets
-loc_combined <- rbind(gm_com_loc, p_com_loc)%>%
+gm_com_loc_2 <- gm_com_loc%>%
+  select(country, location, percentage, dataset)
+p_com_loc_2 <- p_com_loc%>%
+  select(country, location, percentage, dataset)
+
+loc_combined <- rbind(gm_com_loc_2, p_com_loc_2)%>%
   mutate(country = factor(country, levels = c("India", "Guatemala", "Mozambique", "Pakistan")))
 
 # Plot it
 loc_combined_plot <- ggplot(loc_combined, aes(x = dataset, y = percentage, fill = location))+
   geom_bar(stat = "identity", position = "fill")+
   facet_wrap(~ country, nrow = 1) +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(y = "Percentage", x = "Dataset", fill = "Contact location", title = "B") +
+  labs(y = "Proportion", x = "Dataset", fill = "Contact location", title = "B") +
   theme_minimal()+
   theme(plot.background = element_rect(fill = "white", color = NA),
         plot.title = element_text(hjust = 0, size = 30, face = "bold"))+

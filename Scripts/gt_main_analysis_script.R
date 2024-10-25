@@ -2,6 +2,24 @@
 ## Read datasets
 gt.pa <- readRDS("./Guatemala/gt_participant_data_aim1.RDS")
 gt.co <- readRDS("./Guatemala/gt_contact_data_aim1.RDS")
+gt.we <- read.csv("./Other/gt_pop.csv")
+
+######################
+# Calculation of weight
+######################
+
+gt.pa.we <- gt.pa%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  group_by(study_site, participant_age)%>%
+  summarise(n_s = n())%>%
+  mutate(prop_s = n_s/sum(n_s))
+
+gt.we <- gt.we%>%
+  left_join(gt.pa.we, by = c("participant_age", "study_site"))%>%
+  mutate(psweight = prop/prop_s)
 
 #######################
 # TABLE 1 INPUTS
@@ -9,12 +27,16 @@ gt.co <- readRDS("./Guatemala/gt_contact_data_aim1.RDS")
 
 # Participant data characteristics
 # Number of participants
-nrow(gt.pa) #1142 participants
+nrow(gt.pa) #1141 participants
 
 ## By site
 table(gt.pa$study_site)
+## By age
+table(gt.pa$participant_age, useNA = "always")
 ## By age and site
 table(gt.pa$participant_age, gt.pa$study_site, useNA = 'always')
+## By sex
+table(gt.pa$participant_sex, useNA = "always")
 #By sex and site
 table(gt.pa$participant_sex, gt.pa$study_site, useNA = 'always')
 
@@ -24,6 +46,7 @@ gt.pa %>%
   subset(!participant_age %in% c("<6mo", "6-11mo", "1-4y")) -> gt.pa.notkids
 nrow(gt.pa.notkids) #809
 table(gt.pa.notkids$high_educ, gt.pa.notkids$study_site, useNA = 'always')
+table(gt.pa.notkids$high_educ, useNA = "always")
 
 # Occupation
 #restrict to adults only
@@ -31,9 +54,11 @@ gt.pa %>%
   subset(!participant_age %in% c("<6mo", "6-11mo", "1-4y", "5-9y")) -> gt.pa.adults
 nrow(gt.pa.adults) #692
 table(gt.pa.adults$occupation, gt.pa.adults$study_site, useNA = 'always')
+table(gt.pa.adults$occupation, useNA = "always")
 
 # HH size by site
 table(gt.pa$hh_size_cat, gt.pa$study_site, useNA = 'always')
+table(gt.pa$hh_size_cat, useNA = "always")
 
 gt.pa %>%
   group_by(study_site) %>%
@@ -41,6 +66,9 @@ gt.pa %>%
             median = median(hh_size, na.rm = T), 
             q = list(quantile(hh_size, na.rm = T))) %>%
   unnest_wider(q)
+
+median(gt.pa$hh_size, na.rm = T)
+quantile(gt.pa$hh_size, na.rm = T)
 
 # Number of generations and families in households
 gt.co %>%
@@ -51,68 +79,21 @@ gt.co %>%
 
 gt.co %>%
   arrange(rec_id) %>%
+  filter(row_number()==1) %>% # select first contact for each rec_id  (one per participant)
+  group_by(hh.gens) %>%
+  summarize(freq = n())
+
+gt.co %>%
+  arrange(rec_id) %>%
   filter(row_number()==1) %>% # select first contact for each rec_id
   group_by(study_site, hh.multfams) %>%
   summarize(freq = n()) 
 
-#######################
-# TABLE 2 INPUTS
-#######################
-
-#count total contacts
-nrow(gt.co) #14707
-
-#Number of contacts by site
 gt.co %>%
-  group_by(study_site) %>%
-  summarize(freq = n()) 
-
-#Number of contacts by site (DAY 1)
-gt.co %>%
-  group_by(study_site) %>%
-  filter(study_day == 1) %>%
-  summarize(freq = n()) 
-
-#Number of contacts by site (DAY 2)
-gt.co %>%
-  group_by(study_site) %>%
-  filter(study_day == 2) %>%
-  summarize(freq = n()) 
-
-#Repeat contacts 
-gt.co %>%
-  group_by(study_site, fromdayone) %>%
-  summarize(freq = n()) 
-
-#Contacts with household members
-gt.co %>%
-  group_by(study_site, hh_membership) %>%
-  summarize(freq = n()) 
-
-#Physical contacts
-gt.co %>%
-  group_by(study_site, touch_contact) %>%
-  summarize(freq = n()) 
-
-#Familiarity with contacts by study site
-gt.co %>%
-  group_by(study_site, never_before) %>%
-  summarize(freq = n()) 
-
-#Indoor/outdoor contacts
-gt.co %>%
-  group_by(study_site, where_contact) %>%
-  summarize(freq = n()) 
-
-#Duration of contacts
-gt.co %>%
-  group_by(study_site, duration_contact) %>%
-  summarize(freq = n()) 
-
-#Location of contact
-gt.co %>%
-  group_by(study_site, location) %>%
-  summarize(freq = n()) 
+  arrange(rec_id) %>%
+  filter(row_number()==1) %>% # select first contact for each rec_id
+  group_by(hh.multfams) %>%
+  summarize(freq = n())
 
 
 #####################
@@ -120,92 +101,263 @@ gt.co %>%
 #####################
 
 # add participant data to contact data
-gt.co.pa.counts <-  full_join(gt.co, gt.pa, 
+gt.co.pa.full <-  full_join(gt.co, gt.pa, 
                               by = c("rec_id", "study_site")) %>%
-  mutate(contact = ifelse(is.na(survey_date), 0, 1)) #survey_date is complete for all contacts, so this is an indicator variable for whether an observation corresponds to a contact.
+  mutate(contact = ifelse(is.na(survey_date), 0, 1))%>% #survey_date is complete for all contacts, so this is an indicator variable for whether an observation corresponds to a contact.
 # not all participants reported contacts, so this variable is 0 if the observation represents a participant that did not report any contacts.
-
-# count contacts on DAY 1
-gt.co.pa.counts.d1.only <- gt.co.pa.counts %>%
-  filter(study_day == 1) %>%
   count(contact, name = "num_contacts")
 
-# Merge contact counts with participant data - DAY 1 ONLY
-gt.co.pa <- left_join(gt.pa, gt.co.pa.counts.d1.only, by = "rec_id") %>%
+gt.co.pa <- left_join(gt.pa, gt.co.pa.full, by = "rec_id") %>%
   mutate(num_contacts = ifelse(is.na(num_contacts), 0, num_contacts))
 
+# Adjust the age group
+gt.co.pa.age <- gt.co.pa%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(gt.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))
+
 #######################
-# SUPPTABLE 2 INPUTS - DAY 1 ONLY
+# TABLE 2 INPUTS
 #######################
 
-# Contact overall - DAY 1 ONLY
-gt.co.pa %>%
-  summarise(mean = mean(num_contacts, na.rm = T), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            n = n(), 
-            q = list(quantile(num_contacts, na.rm = T))) %>%
-  unnest_wider(q)
+# Contact overall
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
 
-# Contact by site - DAY 1 ONLY
-gt.co.pa %>%
-  group_by(study_site) %>%
-  summarise(mean = mean(num_contacts, na.rm = T), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            n = n(), 
-            q = list(quantile(num_contacts, na.rm = T))) %>%
-  unnest_wider(q)
+# Contact by site
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site)%>%
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
 
-# Contact by site and age - DAY 1 ONLY
+# Contact by site and age
 gt.co.pa %>%
   group_by(study_site, participant_age) %>%
-  summarise(mean = round(mean(num_contacts, na.rm = T), 1), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            q = list(quantile(num_contacts, na.rm = T)),
+  summarise(mean = round(mean(num_contacts/2, na.rm = T), 1), 
+            sd = sd(num_contacts/2, na.rm = T),
+            median = median(num_contacts/2, na.rm = T), 
+            q = list(quantile(num_contacts/2, na.rm = T)),
             n = n()) %>%
   unnest_wider(q) 
 
-# Contact by site and sex - DAY 1 ONLY
+# Contact by age
 gt.co.pa %>%
-  group_by(study_site, participant_sex) %>%
-  summarise(mean = round(mean(num_contacts, na.rm = T), 1), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            q = list(quantile(num_contacts, na.rm = T)),
+  group_by(participant_age) %>%
+  summarise(mean = round(mean(num_contacts/2, na.rm = T), 1), 
+            sd = sd(num_contacts/2, na.rm = T),
+            median = median(num_contacts/2, na.rm = T), 
+            q = list(quantile(num_contacts/2, na.rm = T)),
             n = n()) %>%
-  unnest_wider(q)
+  unnest_wider(q) 
 
-# Contact by site and hh size - DAY 1 ONLY
-gt.co.pa %>%
-  group_by(study_site, hh_size_cat) %>%
-  summarise(mean = round(mean(num_contacts, na.rm = T), 1), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            q = list(quantile(num_contacts, na.rm = T)),
-            n = n()) %>%
-  unnest_wider(q)
+# Contact by site and sex
+gt.co.pa.age %>%
+  filter(!is.na(participant_sex))%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, participant_sex)%>%
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
 
-# Contact by site and education - DAY 1 ONLY
-gt.co.pa %>%
-  group_by(study_site, high_educ) %>%
-  summarise(mean = mean(num_contacts, na.rm = T), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            q = list(quantile(num_contacts, na.rm = T)),
-            n = n()) %>%
-  unnest_wider(q)
+# Contact by sex
+gt.co.pa.age %>%
+  filter(!is.na(participant_sex))%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(participant_sex)%>%
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
 
-# Contact by site and occupation - DAY 1 ONLY
-gt.co.pa %>%
-  group_by(study_site, occupation) %>%
-  summarise(mean = mean(num_contacts, na.rm = T), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            q = list(quantile(num_contacts, na.rm = T)),
-            n = n()) %>%
-  unnest_wider(q)
+# Contact by site and hh size
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, hh_size_cat)%>%
+  filter(n() >= 2) %>% #one group has less than 2 observation so exclude to avoid the error
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+# Contact by hh size
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(hh_size_cat)%>%
+  filter(n() >= 2) %>% #one group has less than 2 observation so exclude to avoid the error
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+# Contact by site and education
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, high_educ)%>%
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+# Contact by education
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(high_educ)%>%
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+# Contact by site and occupation
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, occupation)%>%
+  filter(n() >= 2) %>% #one group has less than 2 observation so exclude to avoid the error
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+# Contact by occupation
+gt.co.pa.age %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(occupation)%>%
+  filter(n() >= 2) %>% #one group has less than 2 observation so exclude to avoid the error
+  summarise(mean = survey_mean(num_contacts/2, na.rm = T),
+            sd = survey_sd(num_contacts/2, na.rm = T),
+            median = survey_median(num_contacts/2, na.rm = T),
+            n = survey_total(),
+            q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+#######################
+# SUPPTABLE 3 INPUTS
+#######################
+
+#join contact data with weight
+gt.co.we <- gt.co%>%
+  left_join(gt.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(gt.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))
+
+#count total contacts
+nrow(gt.co.we) #14707
+
+#Number of contacts by site
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site)%>%
+  summarise(n = survey_total()) 
+
+#Number of contacts by site and study day
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, study_day) %>%
+  summarise(n = survey_total())
+
+# Number of contacts by study day
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_day) %>%
+  summarise(n = survey_total())
+
+#Repeat contacts 
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, fromdayone) %>%
+  summarise(n = survey_total()) 
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(fromdayone) %>%
+  summarise(n = survey_total()) 
+
+#Contacts with household members
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, hh_membership) %>%
+  summarise(n = survey_total()) 
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(hh_membership) %>%
+  summarise(n = survey_total()) 
+
+#Physical contacts
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, touch_contact) %>%
+  summarise(n = survey_total())
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(touch_contact) %>%
+  summarise(n = survey_total())
+
+#Familiarity with contacts by study site
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, never_before) %>%
+  summarise(n = survey_total()) 
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(never_before) %>%
+  summarise(n = survey_total()) 
+
+#Indoor/outdoor contacts
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, where_contact) %>%
+  summarise(n = survey_total())
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(where_contact) %>%
+  summarise(n = survey_total())
+
+#Duration of contacts
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, duration_contact) %>%
+  summarise(n = survey_total()) 
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(duration_contact) %>%
+  summarise(n = survey_total())
+
+#Location of contact
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, location) %>%
+  summarise(n = survey_total())
+
+gt.co.we %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location) %>%
+  summarise(n = survey_total())
+
 
 
 ######################
@@ -213,9 +365,9 @@ gt.co.pa %>%
 ######################
 
 # Figure 1A
-#create plot of contact by age - DAY 1 ONLY
+#create plot of contact by age
 gt.co.pa %>%
-  ggplot(aes(x = participant_age, y = num_contacts, fill=study_site)) + 
+  ggplot(aes(x = participant_age, y = num_contacts/2, fill=study_site)) + 
   geom_boxplot() +
   ylim(0, 45) +
   xlab("") +
@@ -227,7 +379,7 @@ gt.co.pa %>%
         legend.justification = c("right", "top"),
         legend.box.just = "right",
         legend.margin = margin(6, 6, 6, 6),
-        axis.text = element_text(size = 7)) +
+        axis.text.x = element_text(size = 7)) +
   scale_x_discrete(labels = label_wrap(10)) -> gt.co.pa.byage.plot
 
 
@@ -236,6 +388,10 @@ gt.co.pa %>%
 ##### Step 1. Create denominator datasets to calculate contact rates
 ##### Step 2. Symmetrize matrices
 ##### Step 3. Plot
+
+gt.co.pa.counts <-  full_join(gt.co, gt.pa, 
+                              by = c("rec_id", "study_site")) %>%
+  mutate(contact = ifelse(is.na(survey_date), 0, 1))
 
 # Step 1. Create denominator datasets (rural, urban overall)
 gt.pa %>%
@@ -250,11 +406,11 @@ o.denoms.byage.gt %>%
 #create dataframes for contact rate calculation, which include denominators for each age group
 gt.co.pa.counts  %>%
   group_by(participant_age, contact_age) %>%
-  filter(study_day == 1) %>%
   count(participant_age, contact_age, name = "num_contacts") %>%
   right_join(allagecombs, by=c("participant_age", "contact_age"))  %>%
   left_join(o.denoms.byage.gt, by="participant_age") %>% 
-  mutate(num_contacts = replace_na(num_contacts, 0)) %>%
+  mutate(num_contacts = num_contacts/2,
+         num_contacts = replace_na(num_contacts, 0)) %>%
   arrange(participant_age, contact_age) %>%
   mutate(c.rate = num_contacts / n)-> gt.co.pa.counts.formatrix.o
 
@@ -268,14 +424,13 @@ gt.co.pa.counts.formatrix.o.sym  %>%
   theme(legend.position = "bottom",
         axis.text.x = element_text(size = 7)) +
   scale_fill_distiller(palette = "Spectral", limits=c(0, 5), name = "daily contacts") +
-  geom_tile(color = "white",show.legend = FALSE,
+  geom_tile(color = "white", show.legend = FALSE,
             lwd = 1.5,
             linetype = 1) +
   geom_text(aes(label = round(c.rate.sym, digits = 1)), color = "white", size = 3) +
   xlab("") +
   ylab("Contact age") +
-  scale_x_discrete(labels = label_wrap(10))+
-  theme(axis.text = element_text(size = 7))-> mat.gt.o.sym
+  scale_x_discrete(labels = label_wrap(10)) -> mat.gt.o.sym
 
 
 # Figure 1C
@@ -287,8 +442,7 @@ gt.co.pa.counts  %>%
   xlab("Participant Age") +
   ylab("Prop contacts") +
   scale_x_discrete(labels = label_wrap(10)) +
-  theme(axis.text = element_text(size = 7),
-        legend.title = element_blank()) -> loc.gt
+  theme(axis.text.x = element_text(size = 7)) -> loc.gt
 
 
 ######################
@@ -297,9 +451,9 @@ gt.co.pa.counts  %>%
 
 # Create exposure-hours variable and then plot by location / age
 gt.co.pa.counts %>%
-  filter(study_day==1) %>%
+  filter(hh_membership == "Non-member")%>%
   group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/60) %>%
+  summarize(cont_time = sum(cont_time)/(60*2)) %>%
   left_join(o.denoms.byage.gt, by = "participant_age") %>%
   mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
 
@@ -309,7 +463,7 @@ cont_time_byageloc_all %>%
   geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
-  ylim(0, 25) +
+  ylim(0, 10) +
   theme_bw() +
   ggtitle("Guatemala") -> conthours.loc.gt
 
@@ -322,13 +476,17 @@ cont_time_byageloc_all %>%
 
 # Supplemental figure 1
 # Plot of contact duration  by location and age
-gt.co.pa.counts  %>%  
+gt.co.we  %>%  
   filter(!duration_contact == "Unknown") %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, duration_contact)%>%
+  summarise(prop = survey_prop())%>%
   ggplot(aes(x = location, fill = duration_contact)) +
-  geom_bar(position = "fill", show.legend = FALSE) +
+  geom_bar(aes(y = prop), position = "fill", stat = "identity",show.legend = FALSE) +
   scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
   xlab("") +
   ylab("Proportion of contacts") +
+  theme(plot.background = element_rect(fill = "white", color = NA))+
   ggtitle("Guatemala") +
   scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.gt
 
@@ -336,38 +494,46 @@ gt.co.pa.counts  %>%
 # Supplemental figure 2
 # Nature and locations of contact
 ## Physicality
-gt.co.pa.counts  %>%  
+gt.co.we  %>%  
   subset(!is.na(contact_age)) %>%
-  subset(!is.na(touch_contact)) %>%
+  filter(!is.na(touch_contact))%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, touch_contact)%>%
+  summarise(prop = survey_prop())%>%
   ggplot(aes(x = location, fill = touch_contact)) +
-  geom_bar(position="fill", show.legend = FALSE) +
+  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
   scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
   xlab ("") +
-  ylab("Prop contact") +
+  ylab("") +
   ggtitle("Guatemala") +
   guides(fill=guide_legend(title="Physical contact")) -> phys.loc.gt
 
 ## Familiarity
-gt.co.pa.counts  %>%  
+gt.co.we  %>%  
   subset(!is.na(contact_age)) %>%
   filter(!is.na(known_contact)) %>%
-  filter(hh_membership == "Non-member") %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, known_contact)%>%
+  summarise(prop = survey_prop())%>%
   ggplot(aes(x = location, fill = known_contact)) +
-  geom_bar(position="fill", show.legend = FALSE) +
+  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
   scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
   xlab ("") +
-  ylab("Prop contact") +
+  ylab("") +
   guides(fill=guide_legend(title="Familiarity")) -> known.loc.gt
 
 ## Indoors/Outdoors
-gt.co.pa.counts  %>%  
+gt.co.we  %>%  
   subset(!is.na(contact_age)) %>%
   subset(!is.na(where_contact)) %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, where_contact)%>%
+  summarise(prop = survey_prop())%>%
   ggplot(aes(x = location, fill = where_contact)) +
-  geom_bar(position="fill", show.legend = FALSE) +
+  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
   scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
   xlab ("") +
-  ylab("Prop contact") +
+  ylab("") +
   guides(fill=guide_legend(title="Setting"))-> indoor.loc.gt
 
 
@@ -377,7 +543,7 @@ gt.co.pa.counts %>%
   filter(hh_membership == "Non-member") %>%
   filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
   group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/60) %>%
+  summarize(cont_time = sum(cont_time)/(60*2)) %>%
   left_join(o.denoms.byage.gt, by = "participant_age") %>%
   mutate(mean_conthours = cont_time / n)  -> cont_time_byageloc.u5
 
@@ -387,12 +553,13 @@ cont_time_byageloc.u5 %>%
   geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
-  ylim(0, 16) +
+  ylim(0, 10) +
   ggtitle("Guatemala") +
   theme_bw() -> conthours.loc.gt.u5
 
 
 # See supp4-8 file for supplemental figures 4-8.
+
 
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT

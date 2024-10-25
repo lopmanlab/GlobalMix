@@ -8,6 +8,7 @@ library(lubridate)
 library(reshape2)
 library(ggplot2)
 library(scales)
+library(srvyr)
 
 ##########################################################################
 ##########################################################################
@@ -108,14 +109,15 @@ fig2
 
 # Locations and duration of contact by location by age 
 ggarrange(dur.loc.gt, dur.loc.in, dur.loc.mo, dur.loc.pa,
-          nrow = 2, ncol = 2) -> sfig1
+          nrow = 2, ncol = 2,
+          common.legend = T, legend = "right") -> sfig1
 sfig1
 
 # Type of contact by location
 ggarrange(phys.loc.gt, phys.loc.in, phys.loc.mo, phys.loc.pa,
           known.loc.gt, known.loc.in, known.loc.mo, known.loc.pa,
           indoor.loc.gt, indoor.loc.in, indoor.loc.mo, indoor.loc.pa,
-          nrow = 3, ncol = 4) -> sfig2
+          ncol = 4, nrow = 3) -> sfig2
 sfig2
 
 #Contact by location with non-hh members for kids u5
@@ -125,7 +127,7 @@ sfig3
 
 
 # sfig4-8: see supp4-8 file
-
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/fig1_old.png", plot = fig1, height = 8, width = 14, dpi = 300)
 ##########################################################################
 ##########################################################################
 ##########################################################################
