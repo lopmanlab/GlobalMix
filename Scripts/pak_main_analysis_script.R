@@ -558,6 +558,24 @@ cont_time_byageloc.u5 %>%
 
 # See supp4-8 file for supplemental figures 4-8.
 
+# Exposure hours (all contacts)
+pa.co.pa.counts %>%
+  group_by(location, participant_age) %>%
+  summarize(cont_time = sum(cont_time)/(60*2)) %>%
+  left_join(o.denoms.byage.pa, by = "participant_age") %>%
+  mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
+
+cont_time_byageloc_all %>%
+  filter(!location == "Unreported") %>%
+  filter(!is.na(participant_age)) %>%
+  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
+  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
+  xlab("Participant age") +
+  ylab("Daily exposure-hours") +
+  ylim(0, 18) +
+  theme_bw() +
+  ggtitle("Pakistan") -> conthours.loc.all.pa
+
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
 #####################

@@ -125,9 +125,10 @@ ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthou
           nrow = 2, ncol = 2) -> sfig3
 sfig3
 
-
+ggarrange(conthours.loc.all.gt, conthours.loc.all.in, conthours.loc.all.mo, conthours.loc.all.pa,
+          nrow = 2, ncol = 2) -> exp.hour.all
 # sfig4-8: see supp4-8 file
-ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/fig1_old.png", plot = fig1, height = 8, width = 14, dpi = 300)
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/exp_hour_all.png", plot = exp.hour.all, height = 10, width = 15, dpi = 300)
 ##########################################################################
 ##########################################################################
 ##########################################################################

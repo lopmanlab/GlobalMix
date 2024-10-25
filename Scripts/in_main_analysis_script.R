@@ -248,7 +248,8 @@ in.co.we <- in.co%>%
                                      participant_age == "6-11mo" ~ "<5y",
                                      participant_age == "1-4y" ~ "<5y",
                                      TRUE ~ participant_age))%>%
-  left_join(mo.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))
+  left_join(in.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  filter(!is.na(psweight))
 
 #count total contacts
 nrow(in.co.we) #20270
@@ -553,6 +554,30 @@ cont_time_byageloc.u5 %>%
 
 
 # See supp4-8 file for supplemental figures 4-8.
+
+# Exposure hours (all contacts)
+in.co.pa.counts %>%
+  group_by(location, participant_age) %>%
+  summarize(cont_time = sum(cont_time)/(60*2)) %>%
+  left_join(o.denoms.byage.in, by = "participant_age") %>%
+  mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
+
+cont_time_byageloc_all %>%
+  filter(!location == "Unreported") %>%
+  filter(!is.na(participant_age))%>%
+  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
+  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black") +
+  xlab("Participant age") +
+  ylab("Daily exposure-hours") +
+  ggtitle("India") +
+  ylim(0, 18) +
+  theme_bw() +
+  theme(legend.position = c(0.85, 0.72),  # Adjust the position as needed
+        legend.background = element_rect(fill = alpha("white", 1)), color = "black",
+        legend.box.background = element_rect(color = "black"),
+        legend.box.margin = margin(5, 5, 5, 5),  # Ensure space around the legend box
+        legend.margin = margin(5, 5, 5, 5))-> conthours.loc.all.in
+
 
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
