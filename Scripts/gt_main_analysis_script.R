@@ -108,6 +108,7 @@ gt.co.pa.full <-  full_join(gt.co, gt.pa,
   count(contact, name = "num_contacts")
 
 gt.co.pa <- left_join(gt.pa, gt.co.pa.full, by = "rec_id") %>%
+  filter(contact == 1)%>%
   mutate(num_contacts = ifelse(is.na(num_contacts), 0, num_contacts))
 
 # Adjust the age group
@@ -358,7 +359,37 @@ gt.co.we %>%
   group_by(location) %>%
   summarise(n = survey_total())
 
+gt.new.row <- data.frame(participant_age = c("<6mo", "6-11mo", "1-4y", "<6mo", "6-11mo", "1-4y"), 
+                         study_site = c("Rural", "Rural", "Rural", "Urban", "Urban", "Urban"),
+                         pop = NA, prop = NA, n_s = NA, prop_s = NA,
+                         psweight = c(0.4164373, 0.4164373, 0.4164373, 0.4040673, 0.4040673, 0.4040673))
+gt.we.mod <- gt.we%>%
+  rbind(gt.new.row)%>%
+  filter(participant_age != "<5y")
+gt.co.we2 <- gt.co%>%
+  left_join(gt.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  left_join(gt.we.mod%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
+         location = factor(location, levels = c("Home", "School", "Work", "Market / essential", "Worship", "Transit", "Other social / leisure", "Unreported")))
 
+# Location of contact by age
+## Home
+gt.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, participant_age) %>%
+  summarise(n = survey_total())%>%
+  print(n = 80)
+
+gt.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(participant_age) %>%
+  summarise(n = survey_total())
+
+gt.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, location, participant_age) %>%
+  summarise(n = survey_total())%>%
+  print(n = 160)
 
 ######################
 # FIGURE 1 
@@ -578,6 +609,22 @@ cont_time_byageloc_all %>%
   ggtitle("Guatemala") -> conthours.loc.all.gt
 
 
+# High risk contacts
+gt.hr.co <- gt.co.pa.counts%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")
+
+
+gt.hr.co %>%
+  filter(!location == "Unreported")%>%
+  ggplot(aes(x = participant_age, fill = location)) +
+  geom_bar(position = "fill", color = "black") +
+  xlab("Participant Age") +
+  ylab("Prop contacts") +
+  scale_x_discrete(labels = label_wrap(10)) -> hr.loc.gt
+
+
+
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
 #####################
@@ -629,7 +676,9 @@ gt.co.pa.counts %>%
 # Calculate exposure-hours to contacts to determine mean
 gt.co.pa.counts %>%
   group_by(rec_id, study_site) %>%
-  summarize(cont_time = sum(cont_time)/60) -> cont_time_byp
+  summarize(cont_time = sum(cont_time)/(60*2)) -> cont_time_byp
+
+mean(cont_time_byp$cont_time)
 cont_time_byp %>%
   group_by(study_site)%>%
   summarise(mean = mean(cont_time, na.rm = T),
@@ -699,3 +748,53 @@ gt.co.pa.counts  %>%
   group_by(location) %>%
   summarise(n=n())%>%
   mutate(freq = n / sum(n))
+
+# High risk contacts
+gt.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+gt.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(participant_age, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))%>%
+  print(n = 70)
+
+# by site
+gt.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(study_site, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+gt.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(study_site, participant_age, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))%>%
+  print(n = 140)
+
+## non-home
+gt.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  filter(location != "Home")%>%
+  group_by(location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+# by site
+gt.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  filter(location != "Home")%>%
+  group_by(study_site,location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))

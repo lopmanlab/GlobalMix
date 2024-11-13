@@ -350,6 +350,38 @@ in.co.we%>%
 
 
 
+in.new.row <- data.frame(participant_age = c("<6mo", "6-11mo", "<6mo", "6-11mo"), 
+                         study_site = c("Rural", "Rural", "Urban", "Urban"),
+                         pop = NA, prop = NA, n_s = NA, prop_s = NA, prop_all = NA,
+                         psweight = c(0.07113547, 0.07113547, 0.08633534, 0.08633534))
+in.we.mod <- in.we%>%
+  rbind(in.new.row)%>%
+  filter(participant_age != "<1y")
+in.co.we2 <- in.co%>%
+  left_join(in.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  left_join(in.we.mod%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
+         location = factor(location, levels = c("Home", "School", "Work", "Market / essential", "Worship", "Transit", "Other social / leisure", "Unreported")))
+
+# Location of contact by age
+## Home
+in.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, participant_age) %>%
+  summarise(n = survey_total())%>%
+  print(n = 80)
+
+in.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(participant_age) %>%
+  summarise(n = survey_total())
+
+in.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, location, participant_age) %>%
+  summarise(n = survey_total())%>%
+  print(n = 160)
+
 
 ######################
 # FIGURE 1 
@@ -578,7 +610,19 @@ cont_time_byageloc_all %>%
         legend.box.margin = margin(5, 5, 5, 5),  # Ensure space around the legend box
         legend.margin = margin(5, 5, 5, 5))-> conthours.loc.all.in
 
+# high risk contacts
+in.hr.co <- in.co.pa.counts%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")
 
+
+in.hr.co %>%
+  filter(!location == "Unreported")%>%
+  ggplot(aes(x = participant_age, fill = location)) +
+  geom_bar(position = "fill", color = "black") +
+  xlab("Participant Age") +
+  ylab("Prop contacts") +
+  scale_x_discrete(labels = label_wrap(10))-> hr.loc.in
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
 #####################
@@ -698,3 +742,52 @@ in.co.pa.counts  %>%
   group_by(location) %>%
   summarise(n=n())%>%
   mutate(freq = n / sum(n))
+
+# High risk contacts
+in.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+in.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(participant_age, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))%>%
+  print(n = 70)
+
+# by study site
+in.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(study_site, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+in.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(study_site, participant_age, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))%>%
+  print(n = 140)
+
+## non-home
+in.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  filter(location != "Home")%>%
+  group_by(location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+in.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  filter(location != "Home")%>%
+  group_by(study_site, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))

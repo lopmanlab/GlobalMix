@@ -129,6 +129,27 @@ ggarrange(conthours.loc.all.gt, conthours.loc.all.in, conthours.loc.all.mo, cont
           nrow = 2, ncol = 2) -> exp.hour.all
 # sfig4-8: see supp4-8 file
 ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/exp_hour_all.png", plot = exp.hour.all, height = 10, width = 15, dpi = 300)
+
+
+# High-risk contacts
+ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common.legend = T, legend = "right") -> hr.loc
+
+
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/hr_loc.png", plot = hr.loc, height = 8, width = 12, dpi = 300)
+#####################
+# RESULTS TEXT INPUT
+#####################
+
+# Mean contact hours
+combined <- rbind(gt.co.pa.counts%>%mutate(country = "G"), in.co.pa.counts%>%mutate(country = "I"), mo.co.pa.counts%>%mutate(country = "M"), pa.co.pa.counts%>%mutate(country = "P"))%>%
+  filter(!is.na(duration_contact))
+combined%>%
+  group_by(location)%>%
+  summarise(cont_time = sum(cont_time)/60,
+            n = n())%>%
+  mutate(mean_cont_time = cont_time/n)
+
+
 ##########################################################################
 ##########################################################################
 ##########################################################################
