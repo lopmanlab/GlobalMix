@@ -71,6 +71,9 @@ mo.pa%>%
 median(mo.pa$hh_size, na.rm = T)
 quantile(mo.pa$hh_size, na.rm = T)
 
+## statistical test
+wilcox.test(hh_size ~ study_site, data = mo.pa)
+
 #Number of generations and families in households
 mo.co%>%
   arrange(rec_id) %>%
@@ -143,6 +146,36 @@ mo.co.pa.age %>%
             median = survey_median(num_contacts/2, na.rm = T),
             n = survey_total(),
             q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+
+## statistical test
+mo.co.pa.age2 <- mo.co.pa.age%>%
+  mutate(num_contacts = num_contacts/2)
+mo.rural <- mo.co.pa.age%>%
+  filter(study_site == "Rural")%>%
+  mutate(num_contacts = num_contacts/2)%>%
+  pull(num_contacts)
+mo.urban <- mo.co.pa.age%>%
+  filter(study_site == "Urban")%>%
+  mutate(num_contacts = num_contacts/2)%>%
+  pull(num_contacts)
+
+ggplot(mo.co.pa.age2, aes(x = num_contacts, fill = study_site)) +
+  geom_histogram(alpha = 0.6, bins = 30, position = "identity") +
+  facet_wrap(~study_site) +
+  theme_minimal() +
+  labs(title = "Distribution of num_contacts by Study Site")
+
+shapiro.test(mo.rural)
+shapiro.test(mo.urban)
+
+## sample size is large enough (n > 30 for both)
+## two-sample t-test
+
+mo.svy <- svydesign(ids = ~1, weights = ~psweight, data = mo.co.pa.age2)
+mo.ttest <- svyttest(num_contacts ~ study_site, design = mo.svy)
+
+print(mo.ttest)
 
 # Contact by site and age
 mo.co.pa %>%
@@ -478,18 +511,34 @@ mo.co.pa.counts  %>%
 ######################
 
 # Create exposure-hours variable and then plot by location / age
+location_levels <- unique(mo.co$location)
+age_levels <- unique(mo.pa$participant_age)
+
 mo.co.pa.counts %>%
-  #filter(study_day==1) %>%
   filter(hh_membership == "Non-member")%>%
   group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
+  summarise(sd_conthours = sd(cont_time / (60 * 2), na.rm = T),
+            cont_time = sum(cont_time)/(60*2),
+            tot_n = n(),
+            .groups = "drop") %>%
   left_join(o.denoms.byage.mo, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
+  mutate(mean_conthours = cont_time / n,
+         lci = mean_conthours - 1.96 * (sd_conthours / sqrt(tot_n)), 
+         uci = mean_conthours + 1.96 * (sd_conthours / sqrt(tot_n)))%>%
+  right_join(expand_grid(participant_age = age_levels, location = location_levels))%>%
+  filter(!is.na(participant_age))%>%
+  mutate(mean_conthours = replace_na(mean_conthours, 0)) -> cont_time_byageloc_all
 
 cont_time_byageloc_all %>%
   filter(!location == "Unreported") %>%
+  filter(!is.na(participant_age)) %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.6
+  ) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
   ylim(0,10) +
@@ -519,8 +568,88 @@ mo.co.we  %>%
   ggtitle("Mozambique") +
   scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.mo
 
-
 # Supplemental figure 2
+mo.co.pa.counts %>%
+  group_by(location, participant_age)%>%
+  summarise(sd_conthours = sd(cont_time / (60 * 2), na.rm = T),
+            cont_time = sum(cont_time)/(60*2),
+            tot_n = n()) %>%
+  left_join(o.denoms.byage.mo, by = "participant_age") %>%
+  mutate(mean_conthours = cont_time / n,
+         lci = mean_conthours - 1.96 * (sd_conthours / sqrt(tot_n)), 
+         uci = mean_conthours + 1.96 * (sd_conthours / sqrt(tot_n)))%>%
+  right_join(expand_grid(participant_age = age_levels, location = location_levels))%>%
+  filter(!is.na(participant_age))%>%
+  mutate(mean_conthours = replace_na(mean_conthours, 0)) -> cont_time_byageloc_all
+
+cont_time_byageloc_all %>%
+  filter(!location == "Unreported") %>%
+  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.6
+  ) +
+  xlab("Participant age") +
+  ylab("Daily exposure-hours") +
+  ylim(0,18) +
+  ggtitle("Mozambique") +
+  theme_bw() -> conthours.loc.all.mo
+
+# Supplemental figure 3
+# Create exposure-hours variable and then plot by location / age FOR UNDER 5s
+age_levels2 <- c("<6mo", "6-11mo", "1-4y")
+
+mo.co.pa.counts %>%
+  filter(hh_membership == "Non-member") %>%
+  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
+  group_by(location, participant_age)%>%
+  summarise(sd_conthours = sd(cont_time / (60 * 2), na.rm = T),
+            cont_time = sum(cont_time)/(60*2),
+            tot_n = n()) %>%
+  left_join(o.denoms.byage.mo, by = "participant_age") %>%
+  mutate(mean_conthours = cont_time / n,
+         lci = mean_conthours - 1.96 * (sd_conthours / sqrt(tot_n)), 
+         uci = mean_conthours + 1.96 * (sd_conthours / sqrt(tot_n)))%>%
+  right_join(expand_grid(participant_age = age_levels2, location = location_levels))%>%
+  filter(!is.na(participant_age))%>%
+  mutate(mean_conthours = replace_na(mean_conthours, 0),
+         participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y")))  -> cont_time_byageloc.u5
+
+cont_time_byageloc.u5 %>%
+  filter(!location == "Unreported") %>%
+  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.4
+  ) +
+  xlab("Participant age") +
+  ylab("Daily exposure-hours") +
+  ylim(0, 10) +
+  ggtitle("Mozambique") +
+  theme_bw() -> conthours.loc.mo.u5
+
+# Supplemental figure 4
+mo.hr.co <- mo.co.pa.counts%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")
+
+mo.hr.co %>%
+  filter(!location == "Unreported")%>%
+  ggplot(aes(x = participant_age, fill = location)) +
+  geom_bar(position = "fill", color = "black") +
+  xlab("Participant Age") +
+  ylab("Prop contacts") +
+  labs(title = "Mozambique")+
+  scale_x_discrete(labels = label_wrap(10)) -> hr.loc.mo
+
+# See supp5-9 file for supplemental figures 5-9.
+
+#############################
+# Supplemental figure old
 # Nature and locations of contact
 ## Physicality
 mo.co.we  %>%  
@@ -565,61 +694,9 @@ mo.co.we  %>%
   xlab ("") +
   ylab("") +
   guides(fill=guide_legend(title="Setting"))-> indoor.loc.mo
-
-# Supplemental figure 3
-# Create exposure-hours variable and then plot by location / age FOR UNDER 5s
-mo.co.pa.counts %>%
-  filter(hh_membership == "Non-member") %>%
-  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
-  group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
-  left_join(o.denoms.byage.mo, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n)  -> cont_time_byageloc.u5
-
-cont_time_byageloc.u5 %>%
-  filter(!location == "Unreported") %>%
-  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
-  xlab("Participant age") +
-  ylab("Daily exposure-hours") +
-  ylim(0, 10) +
-  ggtitle("Mozambique") +
-  theme_bw() -> conthours.loc.mo.u5
+#########################################################################
 
 
-# See supp4-8 file for supplemental figures 4-8.
-
-# Exposure hours (all contacts)
-mo.co.pa.counts %>%
-  group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
-  left_join(o.denoms.byage.mo, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
-
-cont_time_byageloc_all %>%
-  filter(!location == "Unreported") %>%
-  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
-  xlab("Participant age") +
-  ylab("Daily exposure-hours") +
-  ylim(0,18) +
-  ggtitle("Mozambique") +
-  theme_bw() -> conthours.loc.all.mo
-
-
-# High risk contacts
-mo.hr.co <- mo.co.pa.counts%>%
-  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
-  filter(touch_contact == "Yes")
-
-
-mo.hr.co %>%
-  filter(!location == "Unreported")%>%
-  ggplot(aes(x = participant_age, fill = location)) +
-  geom_bar(position = "fill", color = "black") +
-  xlab("Participant Age") +
-  ylab("Prop contacts") +
-  scale_x_discrete(labels = label_wrap(10)) -> hr.loc.mo
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
 #####################
