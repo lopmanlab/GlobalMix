@@ -128,7 +128,7 @@ sfig3
 ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common.legend = T, legend = "right") -> hr.loc
 
 # sfig5-9: see supp5-9 file
-ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/figures_v2/fig2.png", plot = fig2, height = 10, width = 15, dpi = 300)
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/figures_v2/sup3.png", plot = sfig3, height = 10, width = 15, dpi = 300)
 
 # Type of contact by location
 # ggarrange(phys.loc.gt, phys.loc.in, phys.loc.mo, phys.loc.pa,
