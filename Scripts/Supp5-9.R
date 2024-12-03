@@ -1,4 +1,4 @@
-# Supplemental figures 4-8
+# Supplemental figures 5-9
 
 ###################
 # Data and package loading/preparation ----
@@ -89,7 +89,7 @@ stringency <- stringency%>%
 p_contact <- read.csv("./Other/synthetic_contacts_2021.csv", header = T)
 
 ###########################
-# Supplemental Figure 4 ----
+# Supplemental Figure 5 ----
 ###########################
 
 ## Edit the stringency index data
@@ -217,7 +217,7 @@ str_plot <- grid.arrange(moz_str_part_plot, gt_str_part_plot, ind_str_part_plot,
                          bottom = textGrob("Participant enrollment date", just = "centre", gp = gpar(fontsize = 20)))
 
 #############################
-# Supplemental Figure 5-7 ----
+# Supplemental Figure 6-8 ----
 #############################
 
 # School closure
@@ -424,7 +424,7 @@ moz_contact_count <- moz_contact%>%
 
 # Overlay the stringency index and pandemic restrictions on the number of contacts
 
-## Supplemental Figure 5 ----
+## Supplemental Figure 6 ----
 gt_str_date_plot <- ggplot(gt_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = gt_stringency, aes(y = StringencyIndex_Average * (max(gt_contact_count$contacts) / 100)), color = "red")+
@@ -449,7 +449,7 @@ gt_str_date_plot <- ggplot(gt_contact_count, aes(x = date_participant_enrolled))
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
 
-## Supplemental Figure 6 ----
+## Supplemental Figure 7 ----
 ind_str_date_plot <- ggplot(ind_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = ind_stringency, aes(y = StringencyIndex_Average * (max(ind_contact_count$contacts) / 100)), color = "red")+
@@ -474,7 +474,7 @@ ind_str_date_plot <- ggplot(ind_contact_count, aes(x = date_participant_enrolled
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
 
-## Supplemental Figure 7 ----
+## Supplemental Figure 8 ----
 moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = moz_stringency, aes(y = StringencyIndex_Average * (max(moz_contact_count$contacts) / 100)), color = "red")+
@@ -502,7 +502,7 @@ moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled
 
 
 ###########################
-# Supplemental Figure 8 ----
+# Supplemental Figure 9 ----
 ###########################
 
 ## Panel A ----
