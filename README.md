@@ -1,8 +1,16 @@
 # GlobalMix study
-*Contributors: ... Saad B. Omer <sup>2</sup> Ben Lopman <sup>1</sup>*
+*Contributors: Kristin Nelson <sup>1</sup> and Moses Kiti <sup>1</sup>, Charfudin Sacoor <sup>2</sup>, Azucena Bardají <sup>2</sup> <sup>3</sup>, Americo José <sup>2</sup>, Nilzio Cavele <sup>2</sup>, Herberth Briones Maldonado <sup>4</sup>, Claudia Jarquin <sup>4</sup>, María Ajsivinac <sup>4</sup>, Venkata Raghava <sup>5</sup>, Prasanna Samuel <sup>5</sup>, Rajan Srinivasan <sup>5</sup>, Momin Kazi <sup>6</sup>, Raheel Allana <sup>6</sup>, Machi Shiiba <sup>1</sup>, Sara Kim <sup>1</sup>, Billy Chen <sup>1</sup>, Carol Liu <sup>1</sup>, Samuel Jenness <sup>1</sup>, Noureen Ahmed <sup>6</sup>, Obianuju Aguolu <sup>7</sup>, Maria Sundaram <sup>8</sup>, Inci Yildirim <sup>9</sup>, Fauzia Malik <sup>6</sup>, Alessia Melegaro <sup>10</sup>, Ben Lopman <sup>1</sup> and Saad Omer <sup>6</sup>*
 
-*<sup>1</sup> Emory University*
-*<sup>2</sup> University of Texas SouthWestern*
+*<sup>1</sup> Emory University Rollins School of Public Health, Atlanta, GA, USA*
+*<sup>2</sup> Manhiça Health Research Institute, Manhiça, Mozambique*
+*<sup>3</sup> Barcelona Institute for Global Health ISGlobal, Barcelona, Spain*
+*<sup>4</sup> Universidad del Valle de Guatemala, Guatemala City, Guatemala*
+*<sup>5</sup> The Aga Khan University, Karachi, Pakistan*
+*<sup>6</sup> UT Southwestern, Dallas, TX, USA*
+*<sup>7</sup> The Ohio State University, Columbus, Ohio, USA*
+*<sup>8</sup> Marshfield Research Institute, Marshfield, WI, USA*
+*<sup>9</sup> Yale University, New Haven, CT, USA*
+*<sup>10</sup> University of Milan, Milan, Italy*
 
 *Correspondence to Ben Lopman (blopman@emory.edu)*
 
@@ -41,8 +49,8 @@ The datasets from previous studies used for this analysis are as follows;
 1. Load the packages and run the functions in the "Summary figures and functions" file.
 2. Run the code in the "(countrycode)_main_analysis_script" file.
 3. If needed, code for creating multipanel summary figures is in the "Summary figures and functions" file, which can be used after running all the country's main analysis code.
-4. For modeling outputs, please see "(countrycode)_model" file. For figure 3, please see the "figure3" file that uses the csv files containing the outputs from the model.
-5. For supplemental figures 4-8, please see "Supp4-8" file.
+4. For modeling outputs, please see "Modeling" file.
+5. For supplemental figures 5-9, please see "Supp5-9" file.
 
 ## Reference
 1. Aguolu OG, Kiti MC, Nelson K, et al. Comprehensive profiling of social mixing patterns in resource poor countries: A mixed methods research protocol. PLOS ONE. 2024;19(6):e0301638. doi:10.1371/journal.pone.0301638
