@@ -1,15 +1,16 @@
 # GlobalMix study
-*Contributors: Kristin Nelson <sup>1</sup> and Moses Kiti <sup>1</sup>, Charfudin Sacoor <sup>2</sup>, Azucena Bardají <sup>2</sup> <sup>3</sup>, Americo José <sup>2</sup>, Nilzio Cavele <sup>2</sup>, Herberth Briones Maldonado <sup>4</sup>, Claudia Jarquin <sup>4</sup>, María Ajsivinac <sup>4</sup>, Venkata Raghava <sup>5</sup>, Prasanna Samuel <sup>5</sup>, Rajan Srinivasan <sup>5</sup>, Momin Kazi <sup>6</sup>, Raheel Allana <sup>6</sup>, Machi Shiiba <sup>1</sup>, Sara Kim <sup>1</sup>, Billy Chen <sup>1</sup>, Carol Liu <sup>1</sup>, Samuel Jenness <sup>1</sup>, Noureen Ahmed <sup>6</sup>, Obianuju Aguolu <sup>7</sup>, Maria Sundaram <sup>8</sup>, Inci Yildirim <sup>9</sup>, Fauzia Malik <sup>6</sup>, Alessia Melegaro <sup>10</sup>, Ben Lopman <sup>1</sup> and Saad Omer <sup>6</sup>*
+**Contributors** <br/>
+*Kristin Nelson <sup>1</sup> and Moses Kiti <sup>1</sup>, Charfudin Sacoor <sup>2</sup>, Azucena Bardají <sup>2</sup> <sup>3</sup>, Americo José <sup>2</sup>, Nilzio Cavele <sup>2</sup>, Herberth Briones Maldonado <sup>4</sup>, Claudia Jarquin <sup>4</sup>, María Ajsivinac <sup>4</sup>, Venkata Raghava <sup>5</sup>, Prasanna Samuel <sup>5</sup>, Rajan Srinivasan <sup>5</sup>, Momin Kazi <sup>6</sup>, Raheel Allana <sup>6</sup>, Machi Shiiba <sup>1</sup>, Sara Kim <sup>1</sup>, Billy Chen <sup>1</sup>, Carol Liu <sup>1</sup>, Samuel Jenness <sup>1</sup>, Noureen Ahmed <sup>6</sup>, Obianuju Aguolu <sup>7</sup>, Maria Sundaram <sup>8</sup>, Inci Yildirim <sup>9</sup>, Fauzia Malik <sup>6</sup>, Alessia Melegaro <sup>10</sup>, Ben Lopman <sup>1</sup> and Saad Omer <sup>6</sup>*
 
-*<sup>1</sup> Emory University Rollins School of Public Health, Atlanta, GA, USA*
-*<sup>2</sup> Manhiça Health Research Institute, Manhiça, Mozambique*
-*<sup>3</sup> Barcelona Institute for Global Health ISGlobal, Barcelona, Spain*
-*<sup>4</sup> Universidad del Valle de Guatemala, Guatemala City, Guatemala*
-*<sup>5</sup> The Aga Khan University, Karachi, Pakistan*
-*<sup>6</sup> UT Southwestern, Dallas, TX, USA*
-*<sup>7</sup> The Ohio State University, Columbus, Ohio, USA*
-*<sup>8</sup> Marshfield Research Institute, Marshfield, WI, USA*
-*<sup>9</sup> Yale University, New Haven, CT, USA*
+*<sup>1</sup> Emory University Rollins School of Public Health, Atlanta, GA, USA* <br/>
+*<sup>2</sup> Manhiça Health Research Institute, Manhiça, Mozambique* <br/>
+*<sup>3</sup> Barcelona Institute for Global Health ISGlobal, Barcelona, Spain* <br/>
+*<sup>4</sup> Universidad del Valle de Guatemala, Guatemala City, Guatemala* <br/>
+*<sup>5</sup> The Aga Khan University, Karachi, Pakistan* <br/>
+*<sup>6</sup> UT Southwestern, Dallas, TX, USA* <br/>
+*<sup>7</sup> The Ohio State University, Columbus, Ohio, USA* <br/>
+*<sup>8</sup> Marshfield Research Institute, Marshfield, WI, USA* <br/>
+*<sup>9</sup> Yale University, New Haven, CT, USA* <br/>
 *<sup>10</sup> University of Milan, Milan, Italy*
 
 *Correspondence to Ben Lopman (blopman@emory.edu)*
@@ -32,7 +33,7 @@ Folders are arranged as follows.
 7. Codebook
 
 Each country folder contains 'participants' and 'contact diary' datasets, which contain information about the study participants and their reported contacts, respectively. The Other folder contains the clean datasets used for the analysis.
-The scripts folder has scripts used for the analysis of the [insert manuscript information here]. The Codebook folder contains codebooks explaining the variables in the datasets.
+The scripts folder has scripts used for the analysis of the "Characterizing social behavior relevant for infectious disease transmission in four countries, 2021-2023". The Codebook folder contains codebooks explaining the variables in the datasets.
 
 The participant and contact diary datasets are named as follows;
 - country-code_participant_data_aim.RDS
