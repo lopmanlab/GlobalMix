@@ -11,6 +11,7 @@ library(ggplot2)
 library(gridExtra)
 library(grid)
 library(tidyr)
+library(srvyr)
 
 ## Read the GM data ----
 moz_participant <- readRDS("./Mozambique/moz_participant_data_aim1.RDS")
