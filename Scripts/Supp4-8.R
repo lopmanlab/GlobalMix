@@ -1,19 +1,14 @@
-# Supplemental figures 5-9
+# Supplemental figures 4-8
 
-###################
-# Data and package loading/preparation ----
-###################
-
-## Load package ----
-library(dplyr)
+# Load package
 library(lubridate)
 library(ggplot2)
 library(gridExtra)
 library(grid)
 library(tidyr)
-library(srvyr)
+pacman::p_load(dplyr, lubridate, ggplot2, gridExtra, grid, tidyr)
 
-## Read the GM data ----
+# Read the GM data
 moz_participant <- readRDS("./Mozambique/moz_participant_data_aim1.RDS")
 moz_contact <- readRDS("./Mozambique/moz_contact_data_aim1.RDS")
 ind_participant <- readRDS("./India/ind_participant_data_aim1.RDS")
@@ -23,13 +18,13 @@ gt_contact <- readRDS("./Guatemala/gt_contact_data_aim1.RDS")
 pak_participant <- readRDS("./Pakistan/pak_participant_data_aim1.RDS")
 pak_contact <- readRDS("./Pakistan/pak_contact_data_aim1.RDS")
 
-## Read population age structure ----
+# Read population age structure
 mo.we <- read.csv("./Other/moz_pop.csv")
 in.we <- read.csv("./Other/ind_pop.csv")
 gt.we <- read.csv("./Other/gt_pop.csv")
 pa.we <- read.csv("./Other/pak_pop.csv")
 
-## Calculate age weight ----
+# Calculate age weight
 mo.pa.we <- moz_participant%>%
   mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
                                      participant_age == "6-11mo" ~ "<5y",
@@ -81,16 +76,16 @@ pa.we <- pa.we%>%
   left_join(pa.pa.we, by = c("participant_age", "study_site"))%>%
   mutate(psweight = prop/prop_s)
 
-## Read stringency data ----
+# Read stringency data
 stringency <- read.csv("./Other/OxCGRT_compact_national_v1.csv", header = T)
 stringency <- stringency%>%
   mutate(Date = ymd(Date))
 
-## Read Prem data ----
+# Read Prem data
 p_contact <- read.csv("./Other/synthetic_contacts_2021.csv", header = T)
 
 ###########################
-# Supplemental Figure 5 ----
+## Supplemental Figure 4 ##
 ###########################
 
 ## Edit the stringency index data
@@ -218,7 +213,7 @@ str_plot <- grid.arrange(moz_str_part_plot, gt_str_part_plot, ind_str_part_plot,
                          bottom = textGrob("Participant enrollment date", just = "centre", gp = gpar(fontsize = 20)))
 
 #############################
-# Supplemental Figure 6-8 ----
+## Supplemental Figure 5-7 ##
 #############################
 
 # School closure
@@ -425,7 +420,7 @@ moz_contact_count <- moz_contact%>%
 
 # Overlay the stringency index and pandemic restrictions on the number of contacts
 
-## Supplemental Figure 6 ----
+# Supplemental Figure 5
 gt_str_date_plot <- ggplot(gt_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = gt_stringency, aes(y = StringencyIndex_Average * (max(gt_contact_count$contacts) / 100)), color = "red")+
@@ -450,7 +445,7 @@ gt_str_date_plot <- ggplot(gt_contact_count, aes(x = date_participant_enrolled))
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
 
-## Supplemental Figure 7 ----
+# Supplemental Figure 6
 ind_str_date_plot <- ggplot(ind_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = ind_stringency, aes(y = StringencyIndex_Average * (max(ind_contact_count$contacts) / 100)), color = "red")+
@@ -475,7 +470,7 @@ ind_str_date_plot <- ggplot(ind_contact_count, aes(x = date_participant_enrolled
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
 
-## Supplemental Figure 8 ----
+# Supplemental Figure 7
 moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = moz_stringency, aes(y = StringencyIndex_Average * (max(moz_contact_count$contacts) / 100)), color = "red")+
@@ -503,10 +498,9 @@ moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled
 
 
 ###########################
-# Supplemental Figure 9 ----
+## Supplemental Figure 8 ##
 ###########################
 
-## Panel A ----
 # Modify the Prem data
 p_moz_mod <- p_contact%>%
   filter(iso3c == "MOZ" & setting == "overall" & location_contact == "all")%>%
@@ -552,7 +546,7 @@ p_pak_mod <- p_contact%>%
          contact_age = gsub(" to ", "-", contact_age),
          contact_age = ifelse(contact_age == "75+", "75+y", paste0(contact_age, "y")))
 
-### Create a table ----
+# Create a table
 # Prem
 ## Mozambique
 p_moz_table <- p_moz_mod%>%
@@ -701,7 +695,7 @@ gm_pak_table <- pak_contact%>%
   arrange(participant_age)%>%
   mutate(country = "Pakistan")
 
-### Plot in a line graph ----
+## Plot in a line graph
 # The age category is different, so take a midpoint of the age
 
 # Convert age categories to midpoints
@@ -839,7 +833,7 @@ age_line_plot <- grid.arrange(ind_age_plot, gt_age_plot,moz_age_plot, pak_age_pl
 
 
 
-## Panel B ----
+# Panel B
 # Prepare Prem data
 p_moz_school <- p_contact%>%
   filter(iso3c == "MOZ" & setting == "overall" & location_contact == "school")%>%
@@ -1177,5 +1171,5 @@ loc_combined_plot <- ggplot(loc_combined, aes(x = dataset, y = percentage, fill 
         title = element_text(size = 20),
         strip.text = element_text(size = 20))
 
-## Two-panel plot ----
+# Two-panel plot
 multi_plot <- grid.arrange(age_line_plot, loc_combined_plot, ncol = 2)
