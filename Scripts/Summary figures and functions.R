@@ -9,6 +9,7 @@ library(reshape2)
 library(ggplot2)
 library(scales)
 library(srvyr)
+library(survey)
 
 ##########################################################################
 ##########################################################################
@@ -107,27 +108,49 @@ fig2
 ########################
 
 
-# Locations and duration of contact by location by age 
+# Sup 1 - Locations and duration of contact by location by age 
 ggarrange(dur.loc.gt, dur.loc.in, dur.loc.mo, dur.loc.pa,
           nrow = 2, ncol = 2,
           common.legend = T, legend = "right") -> sfig1
 sfig1
 
-# Type of contact by location
-ggarrange(phys.loc.gt, phys.loc.in, phys.loc.mo, phys.loc.pa,
-          known.loc.gt, known.loc.in, known.loc.mo, known.loc.pa,
-          indoor.loc.gt, indoor.loc.in, indoor.loc.mo, indoor.loc.pa,
-          ncol = 4, nrow = 3) -> sfig2
+# Sup 2
+ggarrange(conthours.loc.all.gt, conthours.loc.all.in, conthours.loc.all.mo, conthours.loc.all.pa,
+          nrow = 2, ncol = 2) -> sfig2
 sfig2
 
-#Contact by location with non-hh members for kids u5
+# Sup 3 - Contact by location with non-hh members for kids u5
 ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthours.loc.pa.u5,
           nrow = 2, ncol = 2) -> sfig3
 sfig3
 
+# Sup 4 - High-risk contacts
+ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common.legend = T, legend = "right") -> hr.loc
 
-# sfig4-8: see supp4-8 file
-ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/fig1_old.png", plot = fig1, height = 8, width = 14, dpi = 300)
+# sfig5-9: see supp5-9 file
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/figures_v2/sup3.png", plot = sfig3, height = 10, width = 15, dpi = 300)
+
+# Type of contact by location
+# ggarrange(phys.loc.gt, phys.loc.in, phys.loc.mo, phys.loc.pa,
+#           known.loc.gt, known.loc.in, known.loc.mo, known.loc.pa,
+#           indoor.loc.gt, indoor.loc.in, indoor.loc.mo, indoor.loc.pa,
+#           ncol = 4, nrow = 3) -> sfig2
+# sfig2
+
+#####################
+# RESULTS TEXT INPUT
+#####################
+
+# Mean contact hours
+combined <- rbind(gt.co.pa.counts%>%mutate(country = "G"), in.co.pa.counts%>%mutate(country = "I"), mo.co.pa.counts%>%mutate(country = "M"), pa.co.pa.counts%>%mutate(country = "P"))%>%
+  filter(!is.na(duration_contact))
+combined%>%
+  group_by(location)%>%
+  summarise(cont_time = sum(cont_time)/60,
+            n = n())%>%
+  mutate(mean_cont_time = cont_time/n)
+
+
 ##########################################################################
 ##########################################################################
 ##########################################################################

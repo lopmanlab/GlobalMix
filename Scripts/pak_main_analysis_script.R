@@ -69,6 +69,9 @@ pa.pa%>%
 median(pa.pa$hh_size, na.rm = T)
 quantile(pa.pa$hh_size, na.rm = T)
 
+## p-value for rural urban difference in hh size
+wilcox.test(hh_size ~ study_site, data = pa.pa)
+
 #Number of generations and families in households - generate participant-level statistics to put into TABLE 1
 pa.co%>%
   arrange(rec_id) %>%
@@ -132,6 +135,8 @@ pa.co.pa.age %>%
             n = survey_total(),
             q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
 
+
+
 # contact by site
 pa.co.pa.age %>%
   as_survey(weights = c(psweight))%>%
@@ -141,6 +146,35 @@ pa.co.pa.age %>%
             median = survey_median(num_contacts/2, na.rm = T),
             n = survey_total(),
             q = survey_quantile(num_contacts/2, c(0.25, 0.75), na.rm = T))
+
+## statistical test
+pa.co.pa.age2 <- pa.co.pa.age%>%
+  mutate(num_contacts = num_contacts/2)
+pa.rural <- pa.co.pa.age%>%
+  filter(study_site == "Rural")%>%
+  mutate(num_contacts = num_contacts/2)%>%
+  pull(num_contacts)
+pa.urban <- pa.co.pa.age%>%
+  filter(study_site == "Urban")%>%
+  mutate(num_contacts = num_contacts/2)%>%
+  pull(num_contacts)
+
+ggplot(pa.co.pa.age2, aes(x = num_contacts, fill = study_site)) +
+  geom_histogram(alpha = 0.6, bins = 30, position = "identity") +
+  facet_wrap(~study_site) +
+  theme_minimal() +
+  labs(title = "Distribution of num_contacts by Study Site")
+
+shapiro.test(pa.rural)
+shapiro.test(pa.urban)
+
+## sample size is large enough (n > 30 for both)
+## two-sample t-test
+
+pa.svy <- svydesign(ids = ~1, weights = ~psweight, data = pa.co.pa.age2)
+pa.ttest <- svyttest(num_contacts ~ study_site, design = pa.svy)
+
+print(pa.ttest)
 
 # Contact by site and age
 pa.co.pa %>%
@@ -251,13 +285,17 @@ pa.co.pa.age %>%
 #######################
 
 pa.co.we <- pa.co%>%
-  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  left_join(pa.pa%>%select(rec_id, participant_age, participant_sex), by = "rec_id")%>%
   mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
                                      participant_age == "6-11mo" ~ "<5y",
                                      participant_age == "1-4y" ~ "<5y",
                                      TRUE ~ participant_age))%>%
   left_join(pa.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
   filter(!is.na(psweight))
+
+pa.co.pa.counts <-  full_join(pa.co, pa.pa, 
+                              by = c("rec_id", "study_site")) %>%
+  mutate(contact = ifelse(is.na(survey_date), 0, 1))
 
 #count total contacts
 nrow(pa.co.we) #32178
@@ -313,6 +351,13 @@ pa.co.we%>%
   group_by(touch_contact) %>%
   summarise(n = survey_total())
 
+##by participant sex
+pa.co.we%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(participant_sex, touch_contact) %>%
+  summarise(n = survey_total(),
+            prop = survey_prop())
+
 #Familiarity with contacts
 pa.co.we%>%
   as_survey(weights = c(psweight))%>%
@@ -357,6 +402,122 @@ pa.co.we%>%
   group_by(location) %>%
   summarise(n = survey_total())
 
+##
+pa.new.row <- data.frame(participant_age = c("<6mo", "6-11mo", "1-4y", "<6mo", "6-11mo", "1-4y"), 
+                         study_site = c("Rural", "Rural", "Rural", "Urban", "Urban", "Urban"),
+                         pop = NA, prop = NA, n_s = NA, prop_s = NA,
+                         psweight = c(0.4527577, 0.4527577, 0.4527577, 0.4326847, 0.4326847, 0.4326847))
+pa.we.mod <- pa.we%>%
+  rbind(pa.new.row)%>%
+  filter(participant_age != "<5y")
+pa.co.we2 <- pa.co%>%
+  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  left_join(pa.we.mod%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
+         location = factor(location, levels = c("Home", "School", "Work", "Market / essential", "Worship", "Transit", "Other social / leisure", "Unreported")))%>%
+  filter(!is.na(participant_age))
+
+# Location of contact by age
+pa.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, participant_age) %>%
+  summarise(n = survey_total())%>%
+  print(n = 80)
+
+pa.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(participant_age) %>%
+  summarise(n = survey_total())
+
+pa.co.we2%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(study_site, location, participant_age) %>%
+  summarise(n = survey_total())%>%
+  print(n = 160)
+
+
+# Calculate exposure-hours to contacts to determine mean
+pa.co.pa.counts %>%
+  group_by(rec_id, study_site) %>%
+  summarize(cont_time = sum(cont_time)/60) -> cont_time_byp
+cont_time_byp %>%
+  group_by(study_site)%>%
+  summarise(mean = mean(cont_time, na.rm = T),
+            min = min(cont_time, na.rm = T),
+            max = max(cont_time, na.rm = T)) 
+
+
+#Calculate proportion of contacts that are with household members for u5s
+pa.co.pa.counts  %>%  
+  filter(participant_age == "<6mo") %>%
+  group_by(hh_membership) %>%
+  summarise(n=n())%>%
+  mutate(freq = n / sum(n))
+pa.co.pa.counts  %>%  
+  filter(participant_age == "6-11mo") %>%
+  group_by(hh_membership) %>%
+  summarise(n=n())%>%
+  mutate(freq = n / sum(n))
+pa.co.pa.counts  %>%  
+  filter(participant_age == "1-4y") %>%
+  group_by(hh_membership) %>%
+  summarise(n=n())%>%
+  mutate(freq = n / sum(n))
+pa.co.pa.counts  %>%  
+  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
+  group_by(hh_membership) %>%
+  summarise(n=n())%>%
+  mutate(freq = n / sum(n))
+
+# High risk contacts
+pa.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+pa.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(participant_age, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))%>%
+  print(n = 70)
+
+## by site
+pa.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(study_site, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+pa.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  group_by(study_site, participant_age, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))%>%
+  print(n = 140)
+
+## non-home
+pa.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  filter(location != "Home")%>%
+  group_by(location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
+pa.co.we2%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")%>%
+  filter(location != "Home")%>%
+  group_by(study_site, location)%>%
+  summarise(n=n())%>%
+  mutate(freq = n/sum(n))
+
 
 ######################
 # FIGURE 1 
@@ -384,10 +545,6 @@ pa.co.pa %>%
 ##### Step 2. Symmetrize matrices
 ##### Step 3. Plot
 
-pa.co.pa.counts <-  full_join(pa.co, pa.pa, 
-                              by = c("rec_id", "study_site")) %>%
-  mutate(contact = ifelse(is.na(survey_date), 0, 1))
-
 # Step 1. Create denominator datasets (rural, urban overall)
 pa.pa%>%
   count(participant_age) %>%
@@ -395,7 +552,7 @@ pa.pa%>%
 
 # Create all combinations of age-age categories
 o.denoms.byage.pa %>%
-  expand(participant_age, participant_age) %>%
+  tidyr::expand(participant_age, participant_age) %>%
   setNames(c("participant_age", "contact_age")) -> allagecombs
 
 #create dfs for contact rate calculation, which include denominators for each age group (rural, urban, overall)
@@ -446,18 +603,44 @@ pa.co.pa.counts  %>%
 ######################
 
 # Create exposure-hours variable and then plot by location / age
+
+location_levels <- unique(pa.co$location)
+age_levels <- unique(pa.pa$participant_age)
+
+id_loc_frame <- expand_grid(rec_id = unique(pa.pa$rec_id), location = unique(pa.co$location))%>%
+  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")
+
 pa.co.pa.counts %>%
   filter(hh_membership == "Non-member")%>%
   group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
+  summarise(cont_time = sum(cont_time)/(60*2)) %>%
   left_join(o.denoms.byage.pa, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
+  mutate(mean_conthours = cont_time / n)-> mean_cont_time_pa
 
-cont_time_byageloc_all %>%
+pa.co%>%
+  filter(hh_membership == "Non-member")%>%
+  mutate(cont_time = cont_time/(60*2))%>%
+  group_by(rec_id, location)%>%
+  summarise(cont_time = sum(cont_time))%>%
+  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
+  mutate(cont_time = replace_na(cont_time, 0))%>%
+  group_by(location, participant_age)%>%
+  summarise(mean_conthours = mean(cont_time),
+            sd = sd(cont_time),
+            n = n())%>%
+  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
+         uci = mean_conthours + 1.96 * (sd / sqrt(n)))-> cont_time_byageloc_all.pa
+
+cont_time_byageloc_all.pa %>%
   filter(!location == "Unreported") %>%
   filter(!is.na(participant_age)) %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.6
+  ) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
   ylim(0, 10) +
@@ -487,196 +670,84 @@ pa.co.we  %>%
   ggtitle("Pakistan") +
   scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.pa
 
-
 # Supplemental figure 2
-# Nature and locations of contacts
-## Physicality
-pa.co.we  %>%  
-  subset(!is.na(contact_age)) %>%
-  filter(!is.na(touch_contact))%>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, touch_contact)%>%
-  summarise(prop = survey_prop())%>%
-  ggplot(aes(x = location, fill = touch_contact)) +
-  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab ("") +
-  ylab("") +
-  ggtitle("Pakistan") +
-  guides(fill=guide_legend(title="Physical contact")) -> phys.loc.pa
+pa.co%>%
+  mutate(cont_time = cont_time/(60*2))%>%
+  group_by(rec_id, location)%>%
+  summarise(cont_time = sum(cont_time))%>%
+  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
+  mutate(cont_time = replace_na(cont_time, 0))%>%
+  group_by(location, participant_age)%>%
+  summarise(mean_conthours = mean(cont_time),
+            sd = sd(cont_time),
+            n = n())%>%
+  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
+         uci = mean_conthours + 1.96 * (sd / sqrt(n)))-> cont_time_byageloc_all.pa
 
-## Familiarity
-pa.co.we  %>%  
-  subset(!is.na(contact_age)) %>%
-  filter(!is.na(known_contact)) %>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, known_contact)%>%
-  summarise(prop = survey_prop())%>%
-  ggplot(aes(x = location, fill = known_contact)) +
-  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab ("") +
-  ylab("") +
-  guides(fill=guide_legend(title="Familiarity")) -> known.loc.pa
-
-## Indoors/Outdoors
-pa.co.we  %>%  
-  subset(!is.na(contact_age)) %>%
-  subset(!is.na(where_contact)) %>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, where_contact)%>%
-  summarise(prop = survey_prop())%>%
-  #filter(!location == "Unreported") %>%
-  ggplot(aes(x = location, fill = where_contact)) +
-  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab ("") +
-  ylab("") +
-  guides(fill=guide_legend(title="Setting"))-> indoor.loc.pa
-
+cont_time_byageloc_all.pa %>%
+  filter(!location == "Unreported") %>%
+  filter(!is.na(participant_age)) %>%
+  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.6
+  ) +
+  xlab("Participant age") +
+  ylab("Daily exposure-hours") +
+  ylim(0, 19) +
+  theme_bw() +
+  ggtitle("Pakistan") -> conthours.loc.all.pa
 
 # Supplemental figure 3
 # Create exposure-hours variable and then plot by location / age for u5s
+age_levels2 <- c("<6mo", "6-11mo", "1-4y")
+
 pa.co.pa.counts %>%
   filter(hh_membership == "Non-member") %>%
   filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
-  group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
-  left_join(o.denoms.byage.pa, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n)  -> cont_time_byageloc.u5
+  mutate(cont_time = cont_time/(60*2))%>%
+  group_by(rec_id, location)%>%
+  summarise(cont_time = sum(cont_time))%>%
+  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
+  mutate(cont_time = replace_na(cont_time, 0))%>%
+  group_by(location, participant_age)%>%
+  summarise(mean_conthours = mean(cont_time),
+            sd = sd(cont_time),
+            n = n())%>%
+  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
+         uci = mean_conthours + 1.96 * (sd / sqrt(n)))%>%
+  mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y")))%>%
+  filter(!is.na(participant_age))-> cont_time_byageloc.u5
 
 cont_time_byageloc.u5 %>%
   filter(!location == "Unreported") %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black", show.legend = FALSE) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.4
+  ) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
   ylim(0, 16) +
   ggtitle("Pakistan") +
   theme_bw() -> conthours.loc.pa.u5
 
+# Supplemental figure 4
+pa.hr.co <- pa.co.pa.counts%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")
 
-# See supp4-8 file for supplemental figures 4-8.
+pa.hr.co %>%
+  filter(!location == "Unreported")%>%
+  ggplot(aes(x = participant_age, fill = location)) +
+  geom_bar(position = "fill", color = "black") +
+  xlab("Participant Age") +
+  ylab("Prop contacts") +
+  labs(title = "Pakistan")+
+  scale_x_discrete(labels = label_wrap(10)) -> hr.loc.pa
 
-#####################
-# RESULTS TEXT INPUTS FOR MANUSCRIPT
-#####################
-
-# Contact by age - DAY 1 ONLY
-pa.co.pa %>%
-  group_by(participant_age) %>%
-  summarise(mean = round(mean(num_contacts, na.rm = T), 1), 
-            sd = sd(num_contacts, na.rm = T),
-            median = median(num_contacts, na.rm = T), 
-            q = list(quantile(num_contacts, na.rm = T)),
-            n = n()) %>%
-  unnest_wider(q) 
-
-#Location of contact
-pa.co.pa.counts %>%
-  group_by(location) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n)) 
-
-# Proportion of contacts reported at home by age
-pa.co.pa.counts %>%
-  filter(location == "Home") %>%
-  group_by(participant_age) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n)) 
-
-# Proportion of contacts reported at school by age
-pa.co.pa.counts %>%
-  filter(location == "School") %>%
-  group_by(participant_age) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n)) 
-
-# Proportion of contacts reported at work by age
-pa.co.pa.counts %>%
-  filter(location == "Work") %>%
-  group_by(participant_age) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n))
-
-# Proportion of contacts reported at transit by age
-pa.co.pa.counts %>%
-  filter(location == "Transit") %>%
-  group_by(participant_age) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n)) 
-
-# Calculate exposure-hours to contacts to determine mean
-pa.co.pa.counts %>%
-  group_by(rec_id, study_site) %>%
-  summarize(cont_time = sum(cont_time)/60) -> cont_time_byp
-cont_time_byp %>%
-  group_by(study_site)%>%
-  summarise(mean = mean(cont_time, na.rm = T),
-            min = min(cont_time, na.rm = T),
-            max = max(cont_time, na.rm = T)) 
-
-
-#Familiarity with contacts *by location*
-pa.co%>%
-  group_by(location, never_before) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n)) 
-
-#Physicality of contacts *by location*
-pa.co%>%
-  group_by(location, touch_contact) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n)) 
-
-#Indoors/outdoors of contacts *by location*
-pa.co%>%
-  group_by(location, where_contact) %>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n))%>%
-  print(n = 30)
-
-
-#Calculate proportion of contacts that are with household members for u5s
-pa.co.pa.counts  %>%  
-  filter(participant_age == "<6mo") %>%
-  group_by(hh_membership) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n))
-pa.co.pa.counts  %>%  
-  filter(participant_age == "6-11mo") %>%
-  group_by(hh_membership) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n))
-pa.co.pa.counts  %>%  
-  filter(participant_age == "1-4y") %>%
-  group_by(hh_membership) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n))
-pa.co.pa.counts  %>%  
-  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
-  group_by(hh_membership) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n))
-
-#Calculate proportion of contacts by location for u5s
-pa.co.pa.counts  %>%  
-  filter(participant_age == "<6mo") %>%
-  group_by(location) %>%
-  summarise(n = n())%>%
-  mutate(freq = n / sum(n)) 
-pa.co.pa.counts  %>%  
-  filter(participant_age == "6-11mo") %>%
-  group_by(location) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n)) 
-pa.co.pa.counts  %>%  
-  filter(participant_age == "1-4y") %>%
-  group_by(location) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n)) 
-pa.co.pa.counts  %>%  
-  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
-  group_by(location) %>%
-  summarise(n=n())%>%
-  mutate(freq = n / sum(n))
+# See supp5-9 file for supplemental figures 5-9.
