@@ -579,7 +579,7 @@ mo.co.pa.counts.formatrix.o.sym  %>%
 mo.co.pa.counts  %>%  
   filter(!location == "Unreported") %>%
   ggplot(aes(x = participant_age, fill = location)) +
-  geom_bar(position = "fill", color = "black") +
+  geom_bar(position = "fill", color = "black", show.legend = FALSE) +
   xlab("Participant Age") +
   ylab("") +
   scale_x_discrete(labels = label_wrap(10)) +
@@ -686,43 +686,8 @@ cont_time_byageloc_all.mo %>%
   ggtitle("Mozambique") +
   theme_bw() -> conthours.loc.all.mo
 
+
 # Supplemental figure 3
-# Create exposure-hours variable and then plot by location / age FOR UNDER 5s
-age_levels2 <- c("<6mo", "6-11mo", "1-4y")
-
-mo.co.pa.counts %>%
-  filter(hh_membership == "Non-member") %>%
-  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
-  mutate(cont_time = cont_time/(60*2))%>%
-  group_by(rec_id, location)%>%
-  summarise(cont_time = sum(cont_time))%>%
-  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
-  mutate(cont_time = replace_na(cont_time, 0))%>%
-  group_by(location, participant_age)%>%
-  summarise(mean_conthours = mean(cont_time),
-            sd = sd(cont_time),
-            n = n())%>%
-  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
-         uci = mean_conthours + 1.96 * (sd / sqrt(n)))%>%
-  mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y")))%>%
-  filter(!is.na(participant_age))-> cont_time_byageloc.u5
-
-cont_time_byageloc.u5 %>%
-  filter(!location == "Unreported") %>%
-  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
-  geom_errorbar(
-    aes(ymin = lci, ymax = uci),
-    position = position_dodge(width = 0.9),
-    width = 0.4
-  ) +
-  xlab("Participant age") +
-  ylab("Daily exposure-hours") +
-  ylim(0, 10) +
-  ggtitle("Mozambique") +
-  theme_bw() -> conthours.loc.mo.u5
-
-# Supplemental figure 4
 mo.hr.co <- mo.co.pa.counts%>%
   filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
   filter(touch_contact == "Yes")
@@ -736,4 +701,4 @@ mo.hr.co %>%
   labs(title = "Mozambique")+
   scale_x_discrete(labels = label_wrap(10)) -> hr.loc.mo
 
-# See supp5-9 file for supplemental figures 5-9.
+# See supp4-8 file for supplemental figures 4-8.
