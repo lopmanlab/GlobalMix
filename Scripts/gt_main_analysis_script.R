@@ -400,7 +400,7 @@ gt.pa %>%
 
 # Create all combinations of age-age categories
 o.denoms.byage.gt %>%
-  expand(participant_age, participant_age) %>%
+  tidyr::expand(participant_age, participant_age) %>%
   setNames(c("participant_age", "contact_age")) -> allagecombs
 
 #create dataframes for contact rate calculation, which include denominators for each age group

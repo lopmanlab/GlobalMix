@@ -244,11 +244,10 @@ in.co.pa.age %>%
 #join contact data with weight
 in.co.we <- in.co%>%
   left_join(in.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
-  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
-                                     participant_age == "6-11mo" ~ "<5y",
-                                     participant_age == "1-4y" ~ "<5y",
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<1y",
+                                     participant_age == "6-11mo" ~ "<1y",
                                      TRUE ~ participant_age))%>%
-  left_join(mo.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))
+  left_join(in.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))
 
 #count total contacts
 nrow(in.co.we) #20270
@@ -385,7 +384,7 @@ in.pa%>%
 
 # Create all combinations of age-age categories
 o.denoms.byage.in %>%
-  expand(participant_age, participant_age) %>%
+  tidyr::expand(participant_age, participant_age) %>%
   setNames(c("participant_age", "contact_age")) -> allagecombs
 
 #create dfs for contact rate calculation, which include denominators for each age group (rural, urban, overall)
