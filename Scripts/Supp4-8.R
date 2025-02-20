@@ -6,6 +6,8 @@ library(ggplot2)
 library(gridExtra)
 library(grid)
 library(tidyr)
+library(survey)
+library(srvyr)
 pacman::p_load(dplyr, lubridate, ggplot2, gridExtra, grid, tidyr)
 
 # Read the GM data
