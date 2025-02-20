@@ -431,30 +431,46 @@ in.co.pa.counts  %>%
 ######################
 # FIGURE 2
 ######################
+id_loc_frame <- expand_grid(rec_id = unique(in.pa$rec_id), location = unique(in.co$location))%>%
+  left_join(in.pa%>%select(rec_id, participant_age), by = "rec_id")
+age_levels2 <- c("<6mo", "6-11mo", "1-4y")
 
-# Create exposure-hours variable and then plot by location / age
 in.co.pa.counts %>%
-  filter(hh_membership == "Non-member")%>%
-  group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
-  left_join(o.denoms.byage.in, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n) -> cont_time_byageloc_all
+  filter(hh_membership == "Non-member") %>%
+  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
+  mutate(cont_time = cont_time/(60*2))%>%
+  group_by(rec_id, location)%>%
+  summarise(cont_time = sum(cont_time))%>%
+  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
+  mutate(cont_time = replace_na(cont_time, 0))%>%
+  group_by(location, participant_age)%>%
+  summarise(mean_conthours = mean(cont_time),
+            sd = sd(cont_time),
+            n = n())%>%
+  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
+         uci = mean_conthours + 1.96 * (sd / sqrt(n)))%>%
+  mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y")))%>%
+  filter(!is.na(participant_age))-> cont_time_byageloc.u5
 
-cont_time_byageloc_all %>%
+cont_time_byageloc.u5 %>%
   filter(!location == "Unreported") %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black") +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black") +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.4
+  ) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
-  ggtitle("India") +
   ylim(0, 10) +
-  theme_bw() +
+  ggtitle("India") +
+  theme_bw()+
   theme(legend.position = c(0.85, 0.72),  # Adjust the position as needed
         legend.background = element_rect(fill = alpha("white", 1)), color = "black",
         legend.box.background = element_rect(color = "black"),
         legend.box.margin = margin(5, 5, 5, 5),  # Ensure space around the legend box
-        legend.margin = margin(5, 5, 5, 5))-> conthours.loc.in
-
+        legend.margin = margin(5, 5, 5, 5))-> conthours.loc.in.u5
 
 # See modeling file for Figure 3 and modeling outputs
 
@@ -480,75 +496,57 @@ in.co.we  %>%
 
 
 # Supplemental figure 2
-# Nature and locations of contacts
-## Physicality
-in.co.we  %>%  
-  subset(!is.na(contact_age)) %>%
-  filter(!is.na(touch_contact))%>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, touch_contact)%>%
-  summarise(prop = survey_prop())%>%
-  ggplot(aes(x = location, fill = touch_contact)) +
-  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab ("") +
-  ylab("") +
-  ggtitle("India") +
-  guides(fill=guide_legend(title="Physical contact")) -> phys.loc.in
+# Create exposure-hours variable and then plot by location / age
+location_levels <- unique(in.co$location)
+age_levels <- unique(in.pa$participant_age)
 
-## Familiarity
-in.co.we  %>%  
-  subset(!is.na(contact_age)) %>%
-  filter(!is.na(known_contact)) %>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, known_contact)%>%
-  summarise(prop = survey_prop())%>%
-  ggplot(aes(x = location, fill = known_contact)) +
-  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab ("") +
-  ylab("") +
-  guides(fill=guide_legend(title="Familiarity")) -> known.loc.in
+in.co%>%
+  mutate(cont_time = cont_time/(60*2))%>%
+  group_by(rec_id, location)%>%
+  summarise(cont_time = sum(cont_time))%>%
+  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
+  mutate(cont_time = replace_na(cont_time, 0))%>%
+  group_by(location, participant_age)%>%
+  summarise(mean_conthours = mean(cont_time),
+            sd = sd(cont_time),
+            n = n())%>%
+  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
+         uci = mean_conthours + 1.96 * (sd / sqrt(n)))-> cont_time_byageloc_all.in
 
-## Indoors/Outdoors
-in.co.we  %>%  
-  subset(!is.na(contact_age)) %>%
-  subset(!is.na(where_contact)) %>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, where_contact)%>%
-  summarise(prop = survey_prop())%>%
-  ggplot(aes(x = location, fill = where_contact)) +
-  geom_bar(aes(y = prop), position="fill", stat = "identity", show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab ("") +
-  ylab("") +
-  guides(fill=guide_legend(title="Setting"))-> indoor.loc.in
-
-
-# Supplemental figure 3
-# Create exposure-hours with non-hh member variable and then plot by location / age FOR UNDER 5s
-in.co.pa.counts %>%
-  filter(hh_membership == "Non-member") %>%
-  filter(participant_age %in% c("<6mo", "6-11mo", "1-4y")) %>%
-  group_by(location, participant_age) %>%
-  summarize(cont_time = sum(cont_time)/(60*2)) %>%
-  left_join(o.denoms.byage.in, by = "participant_age") %>%
-  mutate(mean_conthours = cont_time / n)  -> cont_time_byageloc.u5
-
-cont_time_byageloc.u5 %>%
+cont_time_byageloc_all.in %>%
   filter(!location == "Unreported") %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge2(preserve = "single"), stat = "identity", color = "black") +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black") +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.6
+  ) +
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
-  ylim(0, 10) +
+  ylim(0, 19) +
+  theme_bw() +
   ggtitle("India") +
-  theme_bw()+
-  theme(legend.position = c(0.85, 0.72),  # Adjust the position as needed
+  theme(legend.position = c(0.87, 0.74),  # Adjust the position as needed
         legend.background = element_rect(fill = alpha("white", 1)), color = "black",
         legend.box.background = element_rect(color = "black"),
-        legend.box.margin = margin(5, 5, 5, 5),  # Ensure space around the legend box
-        legend.margin = margin(5, 5, 5, 5))-> conthours.loc.in.u5
+        legend.box.margin = margin(2, 2, 2, 2),  # Ensure space around the legend box
+        legend.margin = margin(5, 5, 5, 5))  -> conthours.loc.all.in
+
+# Supplemental figure 3
+#Proportion of high-risk contacts
+in.hr.co <- in.co.pa.counts%>%
+  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
+  filter(touch_contact == "Yes")
+
+in.hr.co %>%
+  filter(!location == "Unreported")%>%
+  ggplot(aes(x = participant_age, fill = location)) +
+  geom_bar(position = "fill", color = "black") +
+  xlab("Participant Age") +
+  ylab("Prop contacts") +
+  labs(title = "India")+
+  scale_x_discrete(labels = label_wrap(10))-> hr.loc.in
 
 
 # See supp4-8 file for supplemental figures 4-8.

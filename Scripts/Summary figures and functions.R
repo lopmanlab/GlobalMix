@@ -91,7 +91,7 @@ ggarrange(
 # FIGURE 2
 ########################
 
-ggarrange(conthours.loc.gt, conthours.loc.in, conthours.loc.mo, conthours.loc.pa,
+ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthours.loc.pa.u5,
           nrow = 2, ncol = 2) -> fig2
 fig2
 
@@ -119,23 +119,10 @@ ggarrange(conthours.loc.all.gt, conthours.loc.all.in, conthours.loc.all.mo, cont
           nrow = 2, ncol = 2) -> sfig2
 sfig2
 
-# Sup 3 - Contact by location with non-hh members for kids u5
-ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthours.loc.pa.u5,
-          nrow = 2, ncol = 2) -> sfig3
-sfig3
+# Sup 3 - High-risk contacts
+ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common.legend = T, legend = "right") -> sfig3
 
-# Sup 4 - High-risk contacts
-ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common.legend = T, legend = "right") -> hr.loc
-
-# sfig5-9: see supp5-9 file
-ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/GlobalMix Summer Job/output/Four_country_comparison/manuscript/figures_v2/sup3.png", plot = sfig3, height = 10, width = 15, dpi = 300)
-
-# Type of contact by location
-# ggarrange(phys.loc.gt, phys.loc.in, phys.loc.mo, phys.loc.pa,
-#           known.loc.gt, known.loc.in, known.loc.mo, known.loc.pa,
-#           indoor.loc.gt, indoor.loc.in, indoor.loc.mo, indoor.loc.pa,
-#           ncol = 4, nrow = 3) -> sfig2
-# sfig2
+# For supplemental figures 4-8, see supp4-8 file
 
 #####################
 # RESULTS TEXT INPUT
