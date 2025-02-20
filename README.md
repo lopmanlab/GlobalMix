@@ -45,13 +45,41 @@ The datasets from previous studies used for this analysis are as follows;
 1. Oxford Covid-19 Government Response Tracker <sup>2</sup>
 2. Synthetic contact matrices from Prem et al (2021) <sup>3</sup>
 
+# System requirements
+- The code is written in R version 4.4.1 using RStudio version 2023.06.1. <br/>
+- The following packages are used to run the code: [cowplot, dplyr, EpiEstim, EpiModel, ggplot2, ggpubr, ggtext, grid, gridExtra, lubridate, patchwork, reshape2, scales, srvyr, survey, tidyr, viridis]. <br/>
+- The code has been developed and tested on Windows 11. The code should be compatible with Windows and Mac operating systems. <br/>
+- No non-standard hardware is required to run the code. 
+
+# Installation guide
+**Installing the latest version of R**
+1. Go to the Comprehensive R Archive Network: https://cran.r-project.org/
+2. Download the version for your operating system (e.g. Click Download R for Windows/macOS)
+3. Follow the instructions provided
+
+This should take about 3 minutes.
+
+**Installing RStudio**
+1. Go to the download RStudio website: https://posit.co/downloads/
+2. Download RStudio for your operating system.
+3. Follow the instructions provided
+
+This should take about 2 minutes.
+
+**Installing the R packages**
+After installing R and RStudio, you can install packages using the following code.
+```
+install.packages(c("cowplot", "dplyr", "EpiEstim", "EpiModel", "ggplot2", "ggpubr", "ggtext", "grid", "gridExtra", "lubridate", "patchwork", "reshape2", "scales", "srvyr", "survey", "tidyr", "viridis"))
+```
+This should take about 5 minutes.
+
 # Instructions for running the scripts
-**Characterizing social behavior relevant for infectious disease transmission in four countries**
 1. Load the packages and run the functions in the "Summary figures and functions" file.
 2. Run the code in the "(countrycode)_main_analysis_script" file.
 3. If needed, code for creating multipanel summary figures is in the "Summary figures and functions" file, which can be used after running all the country's main analysis code.
-4. For modeling outputs, please see "Modeling" file.
-5. For supplemental figures 5-9, please see "Supp5-9" file.
+4. For modeling code and outputs, please run the code in "Modeling" file.
+5. For supplemental figures 4-8, please run the code in "Supp4-8" file. <br/>
+Each file should take about 20 seconds to run all the code. All the outputs corresponding to the Figure numbers and table numbers are available in main text and supplemental materials.
 
 ## Reference
 1. Aguolu OG, Kiti MC, Nelson K, et al. Comprehensive profiling of social mixing patterns in resource poor countries: A mixed methods research protocol. PLOS ONE. 2024;19(6):e0301638. doi:10.1371/journal.pone.0301638
