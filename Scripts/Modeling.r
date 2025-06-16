@@ -9,9 +9,11 @@
 
 # --- Library
 library(EpiModel)
+library(EpiEstim)
 library(ggplot2)
 library(patchwork)
 library(ggtext)
+library(dplyr)
 
 # --- Model structure
 sirmod <- function(t, t0, parms) {
@@ -844,6 +846,8 @@ gt_prem_values <- data.frame(
   ),
   Site = rep("Prem", 7)
 )
+
+gt.values <- rbind(gt_rur_values, gt_urb_values, gt_prem_values)
 
 # India rural
 ind.rur.1 <- (sum(df.no.rur.ind$si.flow.1) + sum(df.no.rur.ind$si.flow.2) + sum(df.no.rur.ind$si.flow.3)) / 
