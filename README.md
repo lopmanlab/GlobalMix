@@ -69,7 +69,7 @@ This should take about 2 minutes.
 **Installing the R packages**
 After installing R and RStudio, you can install packages using the following code.
 ```
-install.packages(c("cowplot", "dplyr", "EpiEstim", "EpiModel", "ggplot2", "ggpubr", "ggtext", "grid", "gridExtra", "lubridate", "patchwork", "reshape2", "scales", "srvyr", "survey", "tidyr", "viridis"))
+install.packages(c("dplyr", "EpiEstim", "EpiModel", "ggplot2", "ggpubr", "ggtext", "grid", "gridExtra", "lubridate", "patchwork", "reshape2", "scales", "shadowtext,"srvyr", "survey", "tidyr", "viridis"))
 ```
 This should take about 5 minutes.
 
