@@ -10,6 +10,9 @@ library(ggplot2)
 library(scales)
 library(srvyr)
 library(survey)
+library(shadowtext)
+library(gridExtra)
+library(grid)
 
 ##########################################################################
 ##########################################################################
@@ -18,33 +21,24 @@ library(survey)
 
 # Function for making age-structured matrices symmetric
 
-# Function to adjust for reciprocity, works for 9x9 matrices
-adjust_for_reciprocity <- function(df, denoms) {
+# New function - matching the equation with socialmixr
+adjust_for_reciprocity <- function(df, denoms, numframe) {
   
-  #filter NA values, so get 9x9 matrix
+  #filter NA values
   df %>%
     filter(!is.na(contact_age)) -> df.no.na
   
   #create matrix
-  matrix(df.no.na$num_contacts, 9, 9) -> mat
+  matrix(df.no.na$c.rate, numframe, numframe) -> mat
   
   #create indexing
   n <- nrow(mat)
   t <- as.numeric(denoms$n)
   
-  # # Ensure the matrix is square
-  # if (n != ncol(matrix)) {
-  #   stop("Input matrix is not square.")
-  # }
-  
   # Adjust for reciprocity
   for (i in 1:n) {
     for (j in 1:n) {
-      # do not adjust the diagonal
-      # if (i != j) {
-      mat[i, j] <- ((mat[i, j] + mat[j, i]) / 
-                      (df$n[i] + df$n[j]))
-      # }
+      mat[i, j] <- ((mat[i,j]*t[i] + mat[j,i]*t[j])/(2*t[i])) 
       
       # add row and column names for re-appending to df
       rownames(mat) <- as.factor(unique(df$participant_age))
@@ -67,6 +61,16 @@ adjust_for_reciprocity <- function(df, denoms) {
   
 }
 
+
+# Function to convert age categories to midpoints
+get_midpoint <- function(participant_age) {
+  age_range <- strsplit(gsub("[^0-9-]", "", participant_age), "-")[[1]]
+  if (length(age_range) == 1) {
+    return(as.numeric(age_range[1]) + 1)  # for "60+y", assuming 60 is the start
+  } else {
+    return(mean(as.numeric(age_range)))
+  }
+}
 
 ##########################################################################
 ##########################################################################
@@ -104,6 +108,59 @@ fig2
 
 
 ########################
+# FIGURE 4
+########################
+# Panel A
+title_grob <- textGrob("A",
+                       gp = gpar(fontsize = 30, fontface = "bold"),
+                       just = "left",
+                       x = 0.02,
+                       y = 0.5)
+
+age_line_plot <- grid.arrange(gt_age_plot, ind_age_plot,moz_age_plot, pak_age_plot,ncol = 2, top = title_grob)
+
+# Panel B
+# Combine four country
+p_com_loc <- rbind(p_moz_loc, p_ind_loc, p_gt_loc, p_pak_loc)%>%
+  mutate(location = factor(location, levels = c("Home", "School", "Work", "Other")),
+         dataset = "Prem et al., 2021")
+gm_com_loc <- rbind(moz_location, ind_location, gt_location, pak_location)%>%
+  mutate(location = factor(location, levels = c("Home", "School", "Work", "Other", "Unreported")))%>%
+  filter(!is.na(psweight))%>%
+  as_survey(weights = c(psweight))%>%
+  group_by(country, location)%>%
+  summarise(count = survey_total())%>%
+  mutate(percentage = count/sum(count),
+         dataset = "Current study")
+
+# Combine the two datasets
+gm_com_loc_2 <- gm_com_loc%>%
+  select(country, location, percentage, dataset)
+p_com_loc_2 <- p_com_loc%>%
+  select(country, location, percentage, dataset)
+
+loc_combined <- rbind(gm_com_loc_2, p_com_loc_2)%>%
+  mutate(country = factor(country, levels = c("Guatemala", "India",  "Mozambique", "Pakistan")))
+
+# Plot
+loc_combined_plot <- ggplot(loc_combined, aes(x = dataset, y = percentage, fill = location))+
+  geom_bar(stat = "identity", position = "fill")+
+  facet_wrap(~ country, nrow = 1) +
+  labs(y = "Proportion", x = "Dataset", fill = "Contact location", title = "B") +
+  theme_minimal()+
+  theme(plot.background = element_rect(fill = "white", color = NA),
+        plot.title = element_text(hjust = 0, size = 30, face = "bold"))+
+  theme(axis.text = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 20),
+        axis.title = element_text(size = 20),
+        title = element_text(size = 20),
+        strip.text = element_text(size = 20))
+
+# Two-panel plot
+multi_plot <- grid.arrange(age_line_plot, loc_combined_plot, ncol = 2)
+
+########################
 # SUPP FIGURES
 ########################
 
@@ -124,6 +181,29 @@ ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common
 
 # For supplemental figures 4-8, see supp4-8 file
 
+# Site-specific figure
+# Matrix
+ggarrange(
+  ggarrange(mat.gt.r.sym, mat.in.r.sym, mat.mo.r.sym, mat.pa.r.sym, ncol = 4, labels = "Rural", label.y = 1.0),
+  ggarrange(mat.gt.u.sym, mat.in.u.sym, mat.mo.u.sym, mat.pa.u.sym, ncol = 4, labels = "Urban", label.y = 1.0),
+  nrow = 2
+) -> sfig.mat
+
+# Location
+
+ggarrange(
+  ggarrange(loc.gt.r, loc.in.r, loc.mo.r, loc.pa.r, ncol = 4, labels = "Rural", label.x = 0.01, label.y = 1.0),
+  ggarrange(loc.gt.u, loc.in.u, loc.mo.u, loc.pa.u, ncol = 4, labels = "Urban", label.x = 0.01, label.y = 1.0),
+  nrow = 2
+) -> sfig.loc
+
+# Contact matrix comparison figure
+ggarrange(
+  ggarrange(mat.gt.o.sym.7, mat.in.o.sym.7, mat.mo.o.sym.7, mat.pa.o.sym.7, labels = "Current study", ncol = 4, nrow = 1, label.x = 0.01, label.y = 1.0),
+  ggarrange(p.mat.gt, p.mat.in, p.mat.mo, p.mat.pa, ncol = 4, nrow = 1, labels = "Prem et al., 2021", label.x = 0.01, label.y = 1.0), nrow = 2) -> comp_mat
+
+
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/PHPA/GlobalMix/Four-country-paper/Revision/output/Final/sfig.mat.prem.comparison.png", plot = comp_mat, dpi = 300, width = 18, height = 8)
 #####################
 # RESULTS TEXT INPUT
 #####################
