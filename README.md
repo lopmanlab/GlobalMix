@@ -47,7 +47,7 @@ The datasets from previous studies used for this analysis are as follows;
 
 # System requirements
 - The code is written in R version 4.4.1 using RStudio version 2023.06.1. <br/>
-- The following packages are used to run the code: [cowplot, dplyr, EpiEstim, EpiModel, ggplot2, ggpubr, ggtext, grid, gridExtra, lubridate, patchwork, reshape2, scales, srvyr, survey, tidyr, viridis]. <br/>
+- The following packages are used to run the code: [dplyr, EpiEstim, EpiModel, ggplot2, ggpubr, ggtext, grid, gridExtra, lubridate, patchwork, reshape2, scales, shadowtext, srvyr, survey, tidyr, viridis]. <br/>
 - The code has been developed and tested on Windows 11. The code should be compatible with Windows and Mac operating systems. <br/>
 - No non-standard hardware is required to run the code. 
 
