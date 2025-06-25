@@ -287,112 +287,86 @@ pa.co.pa.wd%>%
 # SUPPTABLE 3 INPUTS
 #######################
 
-pa.co.we <- pa.co%>%
-  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
-  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
-                                     participant_age == "6-11mo" ~ "<5y",
-                                     participant_age == "1-4y" ~ "<5y",
-                                     TRUE ~ participant_age))%>%
-  left_join(pa.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
-  filter(!is.na(psweight))
-
 #count total contacts
-nrow(pa.co.we) #32178
+nrow(pa.co) #32178
 
 # Number of contacts by site
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site)%>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Number of contacts by site and study day
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, study_day) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 # Number of contacts by study day
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_day) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Repeat contacts 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, fromdayone) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(fromdayone) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Contacts with household members
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, hh_membership) %>%
-  summarise(n = survey_total()) 
+  summarise(n = n()) 
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(hh_membership) %>%
-  summarise(n = survey_total()) 
+  summarise(n = n()) 
 
 #Physical contacts
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, touch_contact) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(touch_contact) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Familiarity with contacts
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, never_before) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(never_before) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Indoor/outdoor contacts
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, where_contact) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(where_contact) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Duration of contacts
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, duration_contact) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(duration_contact) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 #Location of contact
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(study_site, location) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
-pa.co.we%>%
-  as_survey(weights = c(psweight))%>%
+pa.co%>%
   group_by(location) %>%
-  summarise(n = survey_total())
+  summarise(n = n())
 
 
 ######################
@@ -695,6 +669,15 @@ pak_location <- pa.co%>%
 
 # Supplemental figure 1
 # Plot of contact duration  by location and age
+pa.co.we <- pa.co%>%
+  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(pa.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  filter(!is.na(psweight))
+
 pa.co.we  %>%  
   filter(!duration_contact == "Unknown") %>%
   as_survey(weights = c(psweight))%>%
@@ -760,6 +743,12 @@ pa.hr.co %>%
   ylab("Prop contacts") +
   labs(title = "Pakistan")+
   scale_x_discrete(labels = label_wrap(10)) -> hr.loc.pa
+
+pa.hr.co%>%
+  filter(location != "Home")%>%
+  group_by(location)%>%
+  summarize(n = n()) %>%
+  mutate(freq = n / sum(n))
 
 # See supp4-8 file for supplemental figures 4-8.
 
@@ -1032,6 +1021,13 @@ pa.co.pa.counts.formatrix.o.sym.7  %>%
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
 #####################
+# Physical contact by sex
+pa.co%>%
+  left_join(pa.pa%>%select(rec_id, participant_sex), by = "rec_id")%>%
+  filter(study_site == "Urban")%>%
+  group_by(participant_sex, touch_contact)%>%
+  summarize(n = n()) %>%
+  mutate(freq = n / sum(n)) 
 
 # Contact by age - DAY 1 ONLY
 pa.co.pa %>%
