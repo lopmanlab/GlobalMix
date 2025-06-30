@@ -13,6 +13,11 @@ library(survey)
 library(shadowtext)
 library(gridExtra)
 library(grid)
+library(here)
+library(plotly)
+library(lme4)
+require(MASS)
+library(lmerTest)
 
 ##########################################################################
 ##########################################################################
