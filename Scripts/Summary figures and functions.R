@@ -136,13 +136,13 @@ gm_com_loc <- rbind(moz_location, ind_location, gt_location, pak_location)%>%
   group_by(country, location)%>%
   summarise(count = survey_total())%>%
   mutate(percentage = count/sum(count),
-         dataset = "Current study")
+         dataset = "GlobalMix")
 
 # Combine the two datasets
 gm_com_loc_2 <- gm_com_loc%>%
-  select(country, location, percentage, dataset)
+  dplyr::select(country, location, percentage, dataset)
 p_com_loc_2 <- p_com_loc%>%
-  select(country, location, percentage, dataset)
+  dplyr::select(country, location, percentage, dataset)
 
 loc_combined <- rbind(gm_com_loc_2, p_com_loc_2)%>%
   mutate(country = factor(country, levels = c("Guatemala", "India",  "Mozambique", "Pakistan")))
@@ -152,6 +152,14 @@ loc_combined_plot <- ggplot(loc_combined, aes(x = dataset, y = percentage, fill 
   geom_bar(stat = "identity", position = "fill")+
   facet_wrap(~ country, nrow = 1) +
   labs(y = "Proportion", x = "Dataset", fill = "Contact location", title = "B") +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3",
+                               "Unreported" = "#8B4513"))+
   theme_minimal()+
   theme(plot.background = element_rect(fill = "white", color = NA),
         plot.title = element_text(hjust = 0, size = 30, face = "bold"))+
@@ -204,11 +212,11 @@ ggarrange(
 
 # Contact matrix comparison figure
 ggarrange(
-  ggarrange(mat.gt.o.sym.7, mat.in.o.sym.7, mat.mo.o.sym.7, mat.pa.o.sym.7, labels = "Current study", ncol = 4, nrow = 1, label.x = 0.01, label.y = 1.0),
+  ggarrange(mat.gt.o.sym.7, mat.in.o.sym.7, mat.mo.o.sym.7, mat.pa.o.sym.7, labels = "GlobalMix", ncol = 4, nrow = 1, label.x = 0.05, label.y = 1.0),
   ggarrange(p.mat.gt, p.mat.in, p.mat.mo, p.mat.pa, ncol = 4, nrow = 1, labels = "Prem et al., 2021", label.x = 0.01, label.y = 1.0), nrow = 2) -> comp_mat
 
 
-ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/PHPA/GlobalMix/Four-country-paper/Revision/output/Final/sfig.mat.prem.comparison.png", plot = comp_mat, dpi = 300, width = 18, height = 8)
+ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/PHPA/GlobalMix/Four-country-paper/Revision/output/Final/sfig5.png", plot = comp_mat, dpi = 300, width = 18, height = 9)
 #####################
 # RESULTS TEXT INPUT
 #####################

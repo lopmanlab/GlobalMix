@@ -124,7 +124,7 @@ pa.co.pa.age <- pa.co.pa%>%
                                      participant_age == "6-11mo" ~ "<5y",
                                      participant_age == "1-4y" ~ "<5y",
                                      TRUE ~ participant_age))%>%
-  left_join(pa.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  left_join(pa.we%>% dplyr::select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
   filter(!is.na(participant_age)) # remove the missing participant age observations as this will introduce error when weighting for age
 
 # For weekday/weekend counts
@@ -141,7 +141,7 @@ pa.co.pa.wd <- full_join(pa.pa, pa.co.ed, by = c("rec_id", "study_site"))%>%
                                      participant_age == "6-11mo" ~ "<5y",
                                      participant_age == "1-4y" ~ "<5y",
                                      TRUE ~ participant_age))%>%
-  left_join(pa.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  left_join(pa.we%>% dplyr::select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
   filter(!is.na(participant_age))%>%
   filter(!is.na(dayofweek))
 
@@ -453,6 +453,13 @@ pa.co.pa.counts  %>%
   xlab("Participant Age") +
   ylab("") +
   scale_x_discrete(labels = label_wrap(10)) +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other social / leisure" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3"))+
   theme(axis.text.x = element_text(size = 7)) -> loc.pa
 
 
@@ -462,7 +469,7 @@ pa.co.pa.counts  %>%
 
 # Create exposure-hours variable and then plot by location / age for u5s
 id_loc_frame <- expand_grid(rec_id = unique(pa.pa$rec_id), location = unique(pa.co$location))%>%
-  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")
+  left_join(pa.pa%>% dplyr::select(rec_id, participant_age), by = "rec_id")
 
 age_levels2 <- c("<6mo", "6-11mo", "1-4y")
 
@@ -495,6 +502,13 @@ cont_time_byageloc.u5 %>%
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
   ylim(0, 16) +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other social / leisure" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3"))+
   ggtitle("Pakistan") +
   theme_bw() -> conthours.loc.pa.u5
 
@@ -527,19 +541,19 @@ gm_pak_table_prep <- pa.co%>%
   left_join(pa.pa, by = "rec_id")%>%
   filter(participant_age == "<6mo"|participant_age == "6-11mo"|participant_age == "1-4y")%>%
   mutate(participant_age = "0-4y")%>%
-  group_by(rec_id, participant_age)%>%
+  group_by(rec_id, study_site.x, participant_age)%>%
   summarise(num_contacts = n())%>%
-  group_by(participant_age)%>%
+  group_by(study_site.x, participant_age)%>%
   summarise(contact_rate = mean(num_contacts/2),
             sd = sd(num_contacts/2, na.rm = T),
             n = n())
 
 gm_pak_table <- pa.co%>%
   left_join(pa.pa, by = "rec_id")%>%
-  group_by(rec_id, participant_age)%>%
+  group_by(rec_id, study_site.x, participant_age)%>%
   summarise(num_contacts = n())%>%
   filter(participant_age %in% c("5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"))%>%
-  group_by(participant_age)%>%
+  group_by(study_site.x, participant_age)%>%
   summarise(contact_rate = mean(num_contacts/2),
             sd = sd(num_contacts/2, na.rm = T),
             n = n())%>%
@@ -560,11 +574,14 @@ p_pak_table <- p_pak_table%>%
          lower_ci = NA,
          upper_ci = NA)
 gm_pak_table<- gm_pak_table%>%
-  mutate(dataset = "Current study")%>%
-  select(participant_age, contact_rate, country, age_midpoint, dataset, lower_ci, upper_ci)
+  mutate(dataset = case_when(study_site.x == "Rural" ~ "GlobalMix, rural",
+                             study_site.x == "Urban" ~ "GlobalMix, urban"))%>%
+  ungroup()%>%
+  dplyr::select(participant_age, contact_rate, country, age_midpoint, dataset, lower_ci, upper_ci)
 
 # Combine the datasets
-pak_age_table <- rbind(p_pak_table, gm_pak_table)
+pak_age_table <- rbind(p_pak_table, gm_pak_table)%>%
+  mutate(dataset = factor(dataset, levels = c("Prem et al., 2021", "GlobalMix, rural", "GlobalMix, urban")))
 
 # Plot the line graph
 pak_age_plot <- ggplot(pak_age_table, aes(x = age_midpoint, y = contact_rate, color = dataset)) +
@@ -572,11 +589,12 @@ pak_age_plot <- ggplot(pak_age_table, aes(x = age_midpoint, y = contact_rate, co
   geom_point(size = 2) +
   geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
   scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
-  scale_y_continuous("Contact Rate") +
+  #scale_y_continuous("Contact Rate") +
   ylim(0,25)+
   labs(title = "Pakistan",
        color = "Dataset") +
   ylab("Contact Rate")+
+  scale_color_manual(values = c("Prem et al., 2021" = "sienna", "GlobalMix, rural" = 'aquamarine4', "GlobalMix, urban" = "steelblue3"))+
   theme_minimal()+
   theme(axis.text = element_text(size = 15),
         legend.text = element_text(size = 15),
@@ -654,7 +672,7 @@ pak_location <- pa.co%>%
                               TRUE ~ location))%>%
   left_join(pa.pa, by = "rec_id")%>%
   rename(study_site = study_site.x)%>%
-  select(rec_id, study_site, participant_age, participant_sex, contact_age, contact_sex, location)%>%
+  dplyr::select(rec_id, study_site, participant_age, participant_sex, contact_age, contact_sex, location)%>%
   mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
                                      participant_age == "6-11mo" ~ "<5y",
                                      participant_age == "1-4y" ~ "<5y",
@@ -670,12 +688,12 @@ pak_location <- pa.co%>%
 # Supplemental figure 1
 # Plot of contact duration  by location and age
 pa.co.we <- pa.co%>%
-  left_join(pa.pa%>%select(rec_id, participant_age), by = "rec_id")%>%
+  left_join(pa.pa%>% dplyr::select(rec_id, participant_age), by = "rec_id")%>%
   mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
                                      participant_age == "6-11mo" ~ "<5y",
                                      participant_age == "1-4y" ~ "<5y",
                                      TRUE ~ participant_age))%>%
-  left_join(pa.we%>%select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  left_join(pa.we%>% dplyr::select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
   filter(!is.na(psweight))
 
 pa.co.we  %>%  
@@ -725,6 +743,13 @@ cont_time_byageloc_all.pa %>%
   xlab("Participant age") +
   ylab("Daily exposure-hours") +
   ylim(0, 19) +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other social / leisure" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3"))+
   theme_bw() +
   ggtitle("Pakistan") -> conthours.loc.all.pa
 
@@ -845,6 +870,13 @@ pa.co.pa.counts  %>%
   geom_bar(position = "fill", color = "black", show.legend = F) +
   labs(x = "", y = "", title = "Pakistan")+
   scale_x_discrete(labels = label_wrap(10)) +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other social / leisure" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3"))+
   theme(axis.text.x = element_text(size = 7),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.pa.r
 
@@ -856,6 +888,13 @@ pa.co.pa.counts  %>%
   geom_bar(position = "fill", color = "black", show.legend = F) +
   labs(x = "Participant Age", y = "")+
   scale_x_discrete(labels = label_wrap(10)) +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other social / leisure" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3"))+
   theme(axis.text.x = element_text(size = 7),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.pa.u
 
@@ -1023,7 +1062,7 @@ pa.co.pa.counts.formatrix.o.sym.7  %>%
 #####################
 # Physical contact by sex
 pa.co%>%
-  left_join(pa.pa%>%select(rec_id, participant_sex), by = "rec_id")%>%
+  left_join(pa.pa%>% dplyr:select(rec_id, participant_sex), by = "rec_id")%>%
   filter(study_site == "Urban")%>%
   group_by(participant_sex, touch_contact)%>%
   summarize(n = n()) %>%
