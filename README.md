@@ -1,17 +1,19 @@
 # GlobalMix study
 **Contributors** <br/>
-*Kristin Nelson <sup>1</sup> and Moses Kiti <sup>1</sup>, Charfudin Sacoor <sup>2</sup>, Azucena Bardají <sup>2</sup> <sup>3</sup>, Americo José <sup>2</sup>, Nilzio Cavele <sup>2</sup>, Herberth Briones Maldonado <sup>4</sup>, Claudia Jarquin <sup>4</sup>, María Ajsivinac <sup>4</sup>, Venkata Raghava <sup>5</sup>, Prasanna Samuel <sup>5</sup>, Rajan Srinivasan <sup>5</sup>, Momin Kazi <sup>6</sup>, Raheel Allana <sup>6</sup>, Machi Shiiba <sup>1</sup>, Sara Kim <sup>1</sup>, Billy Chen <sup>1</sup>, Carol Liu <sup>1</sup>, Samuel Jenness <sup>1</sup>, Noureen Ahmed <sup>6</sup>, Obianuju Aguolu <sup>7</sup>, Maria Sundaram <sup>8</sup>, Inci Yildirim <sup>9</sup>, Fauzia Malik <sup>6</sup>, Alessia Melegaro <sup>10</sup>, Ben Lopman <sup>1</sup> and Saad Omer <sup>6</sup>*
+*Kristin Nelson <sup>1</sup> and Moses Kiti <sup>1</sup>, Machi Shiiba <sup>1</sup>, Sara Kim <sup>1</sup>, Pragati V. Prasad <sup>1</sup>, Charfudin Sacoor <sup>2</sup>, Azucena Bardají <sup>2</sup> <sup>3</sup>, Ivalda Macicame <sup>4</sup>, Edgar Jamisse <sup>2</sup>, Corssino Tchavana <sup>2</sup>, Americo José <sup>4</sup>, Nilzio Cavele <sup>2</sup>, Herberth Briones Maldonado <sup>5</sup>, Claudia Jarquin <sup>5</sup>, H. María Ajsivinac <sup>5</sup>, Venkata Raghava <sup>6</sup>, Prasanna Samuel <sup>6</sup>, Rajan Srinivasan <sup>6</sup>, Momin Kazi <sup>7</sup>, Raheel Allana <sup>7</sup>, Dehao Chen <sup>1</sup>, Carol Liu <sup>1</sup>, Samuel M Jenness <sup>1</sup>, Noureen Ahmed <sup>8</sup>, Obianuju Aguolu <sup>9</sup>, Maria A. Sundaram <sup>10</sup>, Inci Yildirim <sup>11</sup>, Fauzia Malik <sup>8</sup>, Alessia Melegaro <sup>12</sup>, Ben Lopman <sup>1</sup> and Saad Omer <sup>8</sup>*
 
 *<sup>1</sup> Emory University Rollins School of Public Health, Atlanta, GA, USA* <br/>
 *<sup>2</sup> Manhiça Health Research Institute, Manhiça, Mozambique* <br/>
 *<sup>3</sup> Barcelona Institute for Global Health ISGlobal, Barcelona, Spain* <br/>
-*<sup>4</sup> Universidad del Valle de Guatemala, Guatemala City, Guatemala* <br/>
-*<sup>5</sup> The Aga Khan University, Karachi, Pakistan* <br/>
-*<sup>6</sup> UT Southwestern, Dallas, TX, USA* <br/>
-*<sup>7</sup> The Ohio State University, Columbus, Ohio, USA* <br/>
-*<sup>8</sup> Marshfield Research Institute, Marshfield, WI, USA* <br/>
-*<sup>9</sup> Yale University, New Haven, CT, USA* <br/>
-*<sup>10</sup> University of Milan, Milan, Italy*
+*<sup>4</sup> National Institute of Health, Maputo, Mozambique* <br/>
+*<sup>5</sup> Universidad del Valle de Guatemala, Guatemala City, Guatemala* <br/>
+*<sup>6</sup> Christian Medical College, Vellore, Tmil Nadu, India* <br/>
+*<sup>7</sup> The Aga Khan University, Karachi, Pakistan* <br/>
+*<sup>8</sup> Peter O'Donnell Jr. School of Public Health, UT Southwestern Medical Center, Dallas, TX, USA* <br/>
+*<sup>9</sup> The Ohio State University, Columbus, Ohio, USA* <br/>
+*<sup>10</sup> Marshfield Research Institute, Marshfield, WI, USA* <br/>
+*<sup>11</sup> Yale University, New Haven, CT, USA* <br/>
+*<sup>12</sup> University of Milan, Milan, Italy*
 
 *Correspondence to Ben Lopman (blopman@emory.edu)*
 
