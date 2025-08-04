@@ -80,8 +80,9 @@ This should take about 5 minutes.
 2. Run the code in the "(countrycode)_main_analysis_script" file.
 3. If needed, code for creating multipanel summary figures is in the "Summary figures and functions" file, which can be used after running all the country's main analysis code.
 4. For modeling code and outputs, please run the code in "Modeling" file.
-5. For supplemental figures 9-12, please run the code in "Supp9-12" file. <br/>
-6. For regression analysis code and outputs, please run the code in "regression_analysis" file, and change the country name/code at the first few lines as needed. <br/>
+5. For supplemental figures 9-12, please run the code in "Supp9-12" file. 
+6. For regression analysis code and outputs, please run the code in "regression_analysis" file, and change the country name/code at the first few lines as needed.
+
 Each file should take about 20 seconds to run all the code. All the outputs corresponding to the Figure numbers and table numbers are available in main text and supplemental materials.
 
 ## Reference
