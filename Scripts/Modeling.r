@@ -9,11 +9,9 @@
 
 # --- Library
 library(EpiModel)
-library(EpiEstim)
 library(ggplot2)
 library(patchwork)
 library(ggtext)
-library(dplyr)
 
 # --- Model structure
 sirmod <- function(t, t0, parms) {
@@ -773,14 +771,18 @@ df.prem.pak <- as.data.frame(sim.prem.pak)
 # ----- Absolute Risk 
 
 # Guatemala rural
-gt.rur.1 <- (sum(df.no.rur.gt$si.flow.1) + sum(df.no.rur.gt$si.flow.2) + sum(df.no.rur.gt$si.flow.3)) / 
-  (init.rur.gt$s.num.1 + init.rur.gt$s.num.2 + init.rur.gt$s.num.3)
+gt.rur.1 <- (sum(df.no.rur.gt$si.flow.1) + sum(df.no.rur.gt$si.flow.2) + sum(df.no.rur.gt$si.flow.3)) / (init.rur.gt$s.num.1 + 
+                                                                                                           init.rur.gt$s.num.2 + init.rur.gt$s.num.3)
 gt.rur.4 <- sum(df.no.rur.gt$si.flow.4) / init.rur.gt$s.num.4
 gt.rur.5 <- sum(df.no.rur.gt$si.flow.5) / init.rur.gt$s.num.5
 gt.rur.6 <- sum(df.no.rur.gt$si.flow.6) / init.rur.gt$s.num.6
 gt.rur.7 <- sum(df.no.rur.gt$si.flow.7) / init.rur.gt$s.num.7
 gt.rur.8 <- sum(df.no.rur.gt$si.flow.8) / init.rur.gt$s.num.8
 gt.rur.9 <- sum(df.no.rur.gt$si.flow.9) / init.rur.gt$s.num.9
+
+gt.rur.all <- sum(df.no.rur.gt$si.flow) / (init.rur.gt$s.num.1 + init.rur.gt$s.num.2 + init.rur.gt$s.num.3 + init.rur.gt$s.num.4 +
+                                        init.rur.gt$s.num.5 + init.rur.gt$s.num.6 + init.rur.gt$s.num.7 + init.rur.gt$s.num.8 +
+                                        init.rur.gt$s.num.9)
 
 gt_rur_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -794,18 +796,22 @@ gt_rur_values <- data.frame(
     gt.rur.8,
     gt.rur.9
   ),
-  Site = rep("Rural", 7)
+  Site = rep("GlobalMix, rural", 7)
 )
 
 # Guatemala urban
-gt.urb.1 <- (sum(df.no.urb.gt$si.flow.1) + sum(df.no.urb.gt$si.flow.2) + sum(df.no.urb.gt$si.flow.3)) / 
-  (init.urb.gt$s.num.1 + init.urb.gt$s.num.2 + init.urb.gt$s.num.3)
+gt.urb.1 <- (sum(df.no.urb.gt$si.flow.1) + sum(df.no.urb.gt$si.flow.2) + sum(df.no.urb.gt$si.flow.3)) / (init.urb.gt$s.num.1 + 
+                                                                                                           init.urb.gt$s.num.2 + init.urb.gt$s.num.3)
 gt.urb.4 <- sum(df.no.urb.gt$si.flow.4) / init.urb.gt$s.num.4
 gt.urb.5 <- sum(df.no.urb.gt$si.flow.5) / init.urb.gt$s.num.5
 gt.urb.6 <- sum(df.no.urb.gt$si.flow.6) / init.urb.gt$s.num.6
 gt.urb.7 <- sum(df.no.urb.gt$si.flow.7) / init.urb.gt$s.num.7
 gt.urb.8 <- sum(df.no.urb.gt$si.flow.8) / init.urb.gt$s.num.8
 gt.urb.9 <- sum(df.no.urb.gt$si.flow.9) / init.urb.gt$s.num.9
+
+gt.urb.all <- sum(df.no.urb.gt$si.flow) / (init.urb.gt$s.num.1 + init.urb.gt$s.num.2 + init.urb.gt$s.num.3 + init.urb.gt$s.num.4 +
+                                             init.urb.gt$s.num.5 + init.urb.gt$s.num.6 + init.urb.gt$s.num.7 + init.urb.gt$s.num.8 +
+                                             init.urb.gt$s.num.9)
 
 gt_urb_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -819,7 +825,7 @@ gt_urb_values <- data.frame(
     gt.urb.8,
     gt.urb.9
   ),
-  Site = rep("Urban", 7)
+  Site = rep("GlobalMix, urban", 7)
 )
 
 # Guatemala PREM
@@ -844,20 +850,24 @@ gt_prem_values <- data.frame(
     gt.prem.6,
     gt.prem.7
   ),
-  Site = rep("Prem", 7)
+  Site = rep("Prem et al., 2021", 7)
 )
 
 gt.values <- rbind(gt_rur_values, gt_urb_values, gt_prem_values)
 
 # India rural
-ind.rur.1 <- (sum(df.no.rur.ind$si.flow.1) + sum(df.no.rur.ind$si.flow.2) + sum(df.no.rur.ind$si.flow.3)) / 
-  (init.rur.ind$s.num.1 + init.rur.ind$s.num.2 + init.rur.ind$s.num.3)
+ind.rur.1 <- (sum(df.no.rur.ind$si.flow.1) + sum(df.no.rur.ind$si.flow.2) + sum(df.no.rur.ind$si.flow.3)) / (init.rur.ind$s.num.1 +
+                                                                                                               init.rur.ind$s.num.2 + init.rur.ind$s.num.3)
 ind.rur.4 <- sum(df.no.rur.ind$si.flow.4) / init.rur.ind$s.num.4
 ind.rur.5 <- sum(df.no.rur.ind$si.flow.5) / init.rur.ind$s.num.5
 ind.rur.6 <- sum(df.no.rur.ind$si.flow.6) / init.rur.ind$s.num.6
 ind.rur.7 <- sum(df.no.rur.ind$si.flow.7) / init.rur.ind$s.num.7
 ind.rur.8 <- sum(df.no.rur.ind$si.flow.8) / init.rur.ind$s.num.8
 ind.rur.9 <- sum(df.no.rur.ind$si.flow.9) / init.rur.ind$s.num.9
+
+ind.rur.all <- sum(df.no.rur.ind$si.flow) / (init.rur.ind$s.num.1 + init.rur.ind$s.num.2 + init.rur.ind$s.num.3 + init.rur.ind$s.num.4 +
+                                             init.rur.ind$s.num.5 + init.rur.ind$s.num.6 + init.rur.ind$s.num.7 + init.rur.ind$s.num.8 +
+                                             init.rur.ind$s.num.9)
 
 ind_rur_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -871,18 +881,22 @@ ind_rur_values <- data.frame(
     ind.rur.8,
     ind.rur.9
   ),
-  Site = rep("Rural", 7)
+  Site = rep("GlobalMix, rural", 7)
 )
 
 # India urban
-ind.urb.1 <- (sum(df.no.urb.ind$si.flow.1) + sum(df.no.urb.ind$si.flow.2) + sum(df.no.urb.ind$si.flow.3)) / 
-  (init.urb.ind$s.num.1 + init.urb.ind$s.num.2 + init.urb.ind$s.num.3)
+ind.urb.1 <- (sum(df.no.urb.ind$si.flow.1) + sum(df.no.urb.ind$si.flow.2) +  sum(df.no.urb.ind$si.flow.3)) / (init.urb.ind$s.num.1 +
+                                                                                                                init.urb.ind$s.num.2 + init.urb.ind$s.num.3)
 ind.urb.4 <- sum(df.no.urb.ind$si.flow.4) / init.urb.ind$s.num.4
 ind.urb.5 <- sum(df.no.urb.ind$si.flow.5) / init.urb.ind$s.num.5
 ind.urb.6 <- sum(df.no.urb.ind$si.flow.6) / init.urb.ind$s.num.6
 ind.urb.7 <- sum(df.no.urb.ind$si.flow.7) / init.urb.ind$s.num.7
 ind.urb.8 <- sum(df.no.urb.ind$si.flow.8) / init.urb.ind$s.num.8
 ind.urb.9 <- sum(df.no.urb.ind$si.flow.9) / init.urb.ind$s.num.9
+
+ind.urb.all <- sum(df.no.urb.ind$si.flow) / (init.urb.ind$s.num.1 + init.urb.ind$s.num.2 + init.urb.ind$s.num.3 + init.urb.ind$s.num.4 +
+                                               init.urb.ind$s.num.5 + init.urb.ind$s.num.6 + init.urb.ind$s.num.7 + init.urb.ind$s.num.8 +
+                                               init.urb.ind$s.num.9)
 
 ind_urb_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -896,7 +910,7 @@ ind_urb_values <- data.frame(
     ind.urb.8,
     ind.urb.9
   ),
-  Site=rep("Urban",7)
+  Site=rep("GlobalMix, urban",7)
 )
 
 # India PREM
@@ -921,20 +935,24 @@ ind_prem_values <- data.frame(
     ind.prem.6,
     ind.prem.7
   ),
-  Site = rep("Prem", 7)
+  Site = rep("Prem et al., 2021", 7)
 )
 
 ind.values <- rbind(ind_rur_values, ind_urb_values, ind_prem_values)
 
 # Mozambique rural
-moz.rur.1 <- (sum(df.no.rur.moz$si.flow.1) + sum(df.no.rur.moz$si.flow.2) + sum(df.no.rur.moz$si.flow.3)) / 
-  (init.rur.moz$s.num.1 + init.rur.moz$s.num.2 + init.rur.moz$s.num.3)
+moz.rur.1 <- (sum(df.no.rur.moz$si.flow.1) + sum(df.no.rur.moz$si.flow.2) + sum(df.no.rur.moz$si.flow.3)) / (init.rur.moz$s.num.1 +
+                                                                                                               init.rur.moz$s.num.2 + init.rur.moz$s.num.3)
 moz.rur.4 <- sum(df.no.rur.moz$si.flow.4) / init.rur.moz$s.num.4
 moz.rur.5 <- sum(df.no.rur.moz$si.flow.5) / init.rur.moz$s.num.5
 moz.rur.6 <- sum(df.no.rur.moz$si.flow.6) / init.rur.moz$s.num.6
 moz.rur.7 <- sum(df.no.rur.moz$si.flow.7) / init.rur.moz$s.num.7
 moz.rur.8 <- sum(df.no.rur.moz$si.flow.8) / init.rur.moz$s.num.8
 moz.rur.9 <- sum(df.no.rur.moz$si.flow.9) / init.rur.moz$s.num.9
+
+moz.rur.all <- sum(df.no.rur.moz$si.flow) / (init.rur.moz$s.num.1 + init.rur.moz$s.num.2 + init.rur.moz$s.num.3 + init.rur.moz$s.num.4 +
+                                               init.rur.moz$s.num.5 + init.rur.moz$s.num.6 + init.rur.moz$s.num.7 + init.rur.moz$s.num.8 +
+                                               init.rur.moz$s.num.9)
 
 moz_rur_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -948,18 +966,22 @@ moz_rur_values <- data.frame(
     moz.rur.8,
     moz.rur.9
   ),
-  Site = rep("Rural",7)
+  Site = rep("GlobalMix, rural",7)
 )
 
 # Mozambique urban
-moz.urb.1 <- (sum(df.no.urb.moz$si.flow.1) + sum(df.no.urb.moz$si.flow.2) + sum(df.no.urb.moz$si.flow.3)) / 
-  (init.urb.moz$s.num.1 + init.urb.moz$s.num.2 + init.urb.moz$s.num.3)
+moz.urb.1 <- (sum(df.no.urb.moz$si.flow.1) + sum(df.no.urb.moz$si.flow.2) + sum(df.no.urb.moz$si.flow.3)) / (init.urb.moz$s.num.1 +
+                                                                                                               init.urb.moz$s.num.2 + init.urb.moz$s.num.3)
 moz.urb.4 <- sum(df.no.urb.moz$si.flow.4) / init.urb.moz$s.num.4
 moz.urb.5 <- sum(df.no.urb.moz$si.flow.5) / init.urb.moz$s.num.5
 moz.urb.6 <- sum(df.no.urb.moz$si.flow.6) / init.urb.moz$s.num.6
 moz.urb.7 <- sum(df.no.urb.moz$si.flow.7) / init.urb.moz$s.num.7
 moz.urb.8 <- sum(df.no.urb.moz$si.flow.8) / init.urb.moz$s.num.8
 moz.urb.9 <- sum(df.no.urb.moz$si.flow.9) / init.urb.moz$s.num.9
+
+moz.urb.all <- sum(df.no.urb.moz$si.flow) / (init.urb.moz$s.num.1 + init.urb.moz$s.num.2 + init.urb.moz$s.num.3 + init.urb.moz$s.num.4 +
+                                               init.urb.moz$s.num.5 + init.urb.moz$s.num.6 + init.urb.moz$s.num.7 + init.urb.moz$s.num.8 +
+                                               init.urb.moz$s.num.9)
 
 moz_urb_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -973,7 +995,7 @@ moz_urb_values <- data.frame(
     moz.urb.8,
     moz.urb.9
   ),
-  Site = rep("Urban",7)
+  Site = rep("GlobalMix, urban",7)
 )
 
 # Mozambique PREM
@@ -998,21 +1020,25 @@ moz_prem_values <- data.frame(
     moz.prem.6,
     moz.prem.7
   ),
-  Site = rep("Prem", 7)
+  Site = rep("Prem et al., 2021", 7)
 )
 
 moz.values <- rbind(moz_rur_values, moz_urb_values, moz_prem_values)
 
 
 # Pakistan rural
-pak.rur.1 <- (sum(df.no.rur.pak$si.flow.1) + sum(df.no.rur.pak$si.flow.2) + sum(df.no.rur.pak$si.flow.3)) / 
-  (init.rur.pak$s.num.1 + init.rur.pak$s.num.2 + init.rur.pak$s.num.3)
+pak.rur.1 <- (sum(df.no.rur.pak$si.flow.1) + sum(df.no.rur.pak$si.flow.2) + sum(df.no.rur.pak$si.flow.3)) / (init.rur.pak$s.num.1 +
+                                                                                                               init.rur.pak$s.num.2 + init.rur.pak$s.num.3)
 pak.rur.4 <- sum(df.no.rur.pak$si.flow.4) / init.rur.pak$s.num.4
 pak.rur.5 <- sum(df.no.rur.pak$si.flow.5) / init.rur.pak$s.num.5
 pak.rur.6 <- sum(df.no.rur.pak$si.flow.6) / init.rur.pak$s.num.6
 pak.rur.7 <- sum(df.no.rur.pak$si.flow.7) / init.rur.pak$s.num.7
 pak.rur.8 <- sum(df.no.rur.pak$si.flow.8) / init.rur.pak$s.num.8
 pak.rur.9 <- sum(df.no.rur.pak$si.flow.9) / init.rur.pak$s.num.9
+
+pak.rur.all <- sum(df.no.rur.pak$si.flow) / (init.rur.pak$s.num.1 + init.rur.pak$s.num.2 + init.rur.pak$s.num.3 + init.rur.pak$s.num.4 +
+                                               init.rur.pak$s.num.5 + init.rur.pak$s.num.6 + init.rur.pak$s.num.7 + init.rur.pak$s.num.8 +
+                                               init.rur.pak$s.num.9)
 
 pak_rur_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -1026,18 +1052,22 @@ pak_rur_values <- data.frame(
     pak.rur.8,
     pak.rur.9
   ),
-  Site = rep("Rural", 7)
+  Site = rep("GlobalMix, rural", 7)
 )
 
 # Pakistan urban
-pak.urb.1 <- (sum(df.no.urb.pak$si.flow.1) + sum(df.no.urb.pak$si.flow.2) + sum(df.no.urb.pak$si.flow.3)) / 
-  (init.urb.pak$s.num.1 + init.urb.pak$s.num.2 + init.urb.pak$s.num.3)
+pak.urb.1 <- (sum(df.no.urb.pak$si.flow.1) + sum(df.no.urb.pak$si.flow.2) + sum(df.no.urb.pak$si.flow.3)) / (init.urb.pak$s.num.1 +
+                                                                                                               init.urb.pak$s.num.2 + init.urb.pak$s.num.3)
 pak.urb.4 <- sum(df.no.urb.pak$si.flow.4) / init.urb.pak$s.num.4
 pak.urb.5 <- sum(df.no.urb.pak$si.flow.5) / init.urb.pak$s.num.5
 pak.urb.6 <- sum(df.no.urb.pak$si.flow.6) / init.urb.pak$s.num.6
 pak.urb.7 <- sum(df.no.urb.pak$si.flow.7) / init.urb.pak$s.num.7
 pak.urb.8 <- sum(df.no.urb.pak$si.flow.8) / init.urb.pak$s.num.8
 pak.urb.9 <- sum(df.no.urb.pak$si.flow.9) / init.urb.pak$s.num.9
+
+pak.urb.all <- sum(df.no.urb.pak$si.flow) / (init.urb.pak$s.num.1 + init.urb.pak$s.num.2 + init.urb.pak$s.num.3 + init.urb.pak$s.num.4 +
+                                               init.urb.pak$s.num.5 + init.urb.pak$s.num.6 + init.urb.pak$s.num.7 + init.urb.pak$s.num.8 +
+                                               init.urb.pak$s.num.9)
 
 pak_urb_values <- data.frame(
   Category = factor(c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y"),
@@ -1051,7 +1081,7 @@ pak_urb_values <- data.frame(
     pak.urb.8,
     pak.urb.9
   ),
-  Site = rep("Urban", 7)
+  Site = rep("GlobalMix, urban", 7)
 )
 
 # Pakistan PREM
@@ -1076,7 +1106,7 @@ pak_prem_values <- data.frame(
     pak.prem.6,
     pak.prem.7
   ),
-  Site = rep("Prem", 7)
+  Site = rep("Prem et al., 2021", 7)
 )
 
 pak.values <- rbind(pak_rur_values, pak_urb_values, pak_prem_values)
@@ -1094,13 +1124,13 @@ all.plot <- ggplot(all.values, aes(x = Category, y = Value, fill = Site)) +
   facet_wrap(~ Country, scales = "free_x") +
   labs(
     x = NULL,
-    y = "Risk"
+    y = "Cumulative Incidence"
   ) +
-  scale_fill_manual(values = c("Rural" = "aquamarine4", "Urban" = "steelblue3", "Prem" = "sienna")) +
+  scale_fill_manual(values = c("GlobalMix, rural" = "aquamarine4", "GlobalMix, urban" = "steelblue3", "Prem et al., 2021" = "sienna")) +
   theme_minimal() +
   theme(
     strip.text = element_text(size = 12, face = "bold"),
-    axis.text.x = element_text(angle = 45, hjust = 1)
+    #axis.text.x = element_text(angle = 45, hjust = 1)
   ) +
   ylim(0, 1)
 
@@ -1164,39 +1194,39 @@ df.prem.pak <- df.prem.pak %>%
 
 df_gt <- bind_rows(
   df.no.rur.gt %>% select(time, gt.rur.inc) %>%
-    rename(incidence = gt.rur.inc) %>% mutate(area = "Rural", country = "Guatemala"),
+    rename(incidence = gt.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "Guatemala"),
   df.no.urb.gt %>% select(time, gt.urb.inc) %>%
-    rename(incidence = gt.urb.inc) %>% mutate(area = "Urban", country = "Guatemala"),
+    rename(incidence = gt.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "Guatemala"),
   df.prem.gt %>% select(time, gt.prem.inc) %>%
-    rename(incidence = gt.prem.inc) %>% mutate(area = "Prem", country = "Guatemala")
+    rename(incidence = gt.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "Guatemala")
 )
 
 # Repeat for each country
 df_ind <- bind_rows(
   df.no.rur.ind %>% select(time, ind.rur.inc) %>%
-    rename(incidence = ind.rur.inc) %>% mutate(area = "Rural", country = "India"),
+    rename(incidence = ind.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "India"),
   df.no.urb.ind %>% select(time, ind.urb.inc) %>%
-    rename(incidence = ind.urb.inc) %>% mutate(area = "Urban", country = "India"),
+    rename(incidence = ind.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "India"),
   df.prem.ind %>% select(time, ind.prem.inc) %>%
-    rename(incidence = ind.prem.inc) %>% mutate(area = "Prem", country = "India")
+    rename(incidence = ind.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "India")
 )
 
 df_moz <- bind_rows(
   df.no.rur.moz %>% select(time, moz.rur.inc) %>%
-    rename(incidence = moz.rur.inc) %>% mutate(area = "Rural", country = "Mozambique"),
+    rename(incidence = moz.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "Mozambique"),
   df.no.urb.moz %>% select(time, moz.urb.inc) %>%
-    rename(incidence = moz.urb.inc) %>% mutate(area = "Urban", country = "Mozambique"),
+    rename(incidence = moz.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "Mozambique"),
   df.prem.moz %>% select(time, moz.prem.inc) %>%
-    rename(incidence = moz.prem.inc) %>% mutate(area = "Prem", country = "Mozambique")
+    rename(incidence = moz.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "Mozambique")
 )
 
 df_pak <- bind_rows(
   df.no.rur.pak %>% select(time, pak.rur.inc) %>%
-    rename(incidence = pak.rur.inc) %>% mutate(area = "Rural", country = "Pakistan"),
+    rename(incidence = pak.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "Pakistan"),
   df.no.urb.pak %>% select(time, pak.urb.inc) %>%
-    rename(incidence = pak.urb.inc) %>% mutate(area = "Urban", country = "Pakistan"),
+    rename(incidence = pak.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "Pakistan"),
   df.prem.pak %>% select(time, pak.prem.inc) %>%
-    rename(incidence = pak.prem.inc) %>% mutate(area = "Prem", country = "Pakistan")
+    rename(incidence = pak.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "Pakistan")
 )
 
 # Combine all into one long data frame
@@ -1207,7 +1237,7 @@ ggplot(df_all, aes(x = time, y = incidence, color = area)) +
   facet_wrap(~ country, ncol = 2) +
   scale_color_manual(
     name = "",
-    values = c("Rural" = "aquamarine4", "Urban" = "steelblue3", "Prem" = "sienna")
+    values = c("GlobalMix, rural" = "aquamarine4", "GlobalMix, urban" = "steelblue3", "Prem et al., 2021" = "sienna")
   ) +
   labs(x = "Time", y = "Incidence") +
   theme_minimal() +
@@ -1388,3 +1418,17 @@ ggplot(df_all_epi, aes(x = t_end, y = mean_r, color = area)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom") 
+
+# --- proportion of infections
+# gt
+(sum(df.no.rur.gt$si.flow.1) + sum(df.no.rur.gt$si.flow.2) + sum(df.no.rur.gt$si.flow.3)) / sum(df.no.rur.gt$si.flow) # 12.2
+(sum(df.no.urb.gt$si.flow.1) + sum(df.no.urb.gt$si.flow.2) + sum(df.no.urb.gt$si.flow.3)) / sum(df.no.urb.gt$si.flow) # 10.6
+# ind
+(sum(df.no.rur.ind$si.flow.1) + sum(df.no.rur.ind$si.flow.2) + sum(df.no.rur.ind$si.flow.3)) / sum(df.no.rur.ind$si.flow) # 9.8
+(sum(df.no.urb.ind$si.flow.1) + sum(df.no.urb.ind$si.flow.2) + sum(df.no.urb.ind$si.flow.3)) / sum(df.no.urb.ind$si.flow) # 9.9
+# moz
+(sum(df.no.rur.moz$si.flow.1) + sum(df.no.rur.moz$si.flow.2) + sum(df.no.rur.moz$si.flow.3)) / sum(df.no.rur.moz$si.flow) # 14.4
+(sum(df.no.urb.moz$si.flow.1) + sum(df.no.urb.moz$si.flow.2) + sum(df.no.urb.moz$si.flow.3)) / sum(df.no.urb.moz$si.flow) # 12.0
+# pak 
+(sum(df.no.rur.pak$si.flow.1) + sum(df.no.rur.pak$si.flow.2) + sum(df.no.rur.pak$si.flow.3)) / sum(df.no.rur.pak$si.flow) # 16.6
+(sum(df.no.urb.pak$si.flow.1) + sum(df.no.urb.pak$si.flow.2) + sum(df.no.urb.pak$si.flow.3)) / sum(df.no.urb.pak$si.flow) # 13.2
