@@ -1,4 +1,4 @@
-# Supplemental figures 4-7
+# Supplemental figures 9-12
 
 # Load package
 library(lubridate)
@@ -84,7 +84,7 @@ stringency <- stringency%>%
   mutate(Date = ymd(Date))
 
 ###########################
-## Supplemental Figure 4 ##
+## Supplemental Figure 9 ##
 ###########################
 
 ## Edit the stringency index data
@@ -212,7 +212,7 @@ str_plot <- grid.arrange(moz_str_part_plot, gt_str_part_plot, ind_str_part_plot,
                          bottom = textGrob("Participant enrollment date", just = "centre", gp = gpar(fontsize = 20)))
 
 #############################
-## Supplemental Figure 5-7 ##
+## Supplemental Figure 10-12 ##
 #############################
 
 # School closure
@@ -419,7 +419,7 @@ moz_contact_count <- moz_contact%>%
 
 # Overlay the stringency index and pandemic restrictions on the number of contacts
 
-# Supplemental Figure 5
+# Supplemental Figure 10
 gt_str_date_plot <- ggplot(gt_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = gt_stringency, aes(y = StringencyIndex_Average * (max(gt_contact_count$contacts) / 100)), color = "red")+
@@ -444,7 +444,7 @@ gt_str_date_plot <- ggplot(gt_contact_count, aes(x = date_participant_enrolled))
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
 
-# Supplemental Figure 6
+# Supplemental Figure 11
 ind_str_date_plot <- ggplot(ind_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = ind_stringency, aes(y = StringencyIndex_Average * (max(ind_contact_count$contacts) / 100)), color = "red")+
@@ -469,7 +469,7 @@ ind_str_date_plot <- ggplot(ind_contact_count, aes(x = date_participant_enrolled
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
 
-# Supplemental Figure 7
+# Supplemental Figure 12
 moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled))+
   geom_bar(aes(y = contacts), stat = "identity")+
   geom_line(data = moz_stringency, aes(y = StringencyIndex_Average * (max(moz_contact_count$contacts) / 100)), color = "red")+
@@ -496,175 +496,164 @@ moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled
   facet_wrap(~type)
 
 
-# Supp table 8 old code #
-
-# Table of the contact rates of four countries from Prem dataset
-# p_age_table <- rbind(p_ind_table, p_gt_table, p_moz_table, p_pak_table)%>%
-#   pivot_wider(names_from = country, values_from = contact_rate)%>%
-#   mutate(participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-14y", "15-19y",
-#                                                               "20-24y", "25-29y", "30-34y", "35-39y",
-#                                                               "40-44y", "45-49y", "50-54y", "55-59y",
-#                                                               "60-64y", "65-69y", "70-74y", "75-79y")))%>%
-#   arrange(participant_age)
 
 
 
-
-# Supplemental contact matrices comparison
-# Modify the Prem data
-# Take weighted mean for aggregating age groups
-pop <- read.csv("./Other/popage_total2020.csv")%>%
-  rename(country = Region..subregion..country.or.area..,
-         year = Reference.date..as.of.1.July.)%>%
-  filter(country == "Mozambique"|country == "India"| country == "Guatemala"|country == "Pakistan")
-
-moz_pop <- pop%>%
-  filter(country == "Mozambique")%>%
-  t()%>%
-  as.data.frame()%>%
-  slice(-1, -2) %>%
-  setNames("population")%>%
-  tibble::rownames_to_column("age")%>%
-  mutate(age_group = case_when(age == "age0" ~ "0-4y",
-                               age == "age5" ~ "5-9y",
-                               age == "age10" ~ "10-14y",
-                               age == "age15" ~ "15-19y",
-                               age == "age20" ~ "20-24y",
-                               age == "age25" ~ "25-29y",
-                               age == "age30" ~ "30-34y",
-                               age == "age35" ~ "35-39y",
-                               age == "age40" ~ "40-44y",
-                               age == "age45" ~ "45-49y",
-                               age == "age50" ~ "50-54y",
-                               age == "age55" ~ "55-59y",
-                               age == "age60" ~ "60-64y",
-                               age == "age65" ~ "65-69y",
-                               age == "age70" ~ "70-74y",
-                               TRUE ~ "75+y"),
-         population = as.numeric(population))%>%
-  group_by(age_group)%>%
-  summarise(subtotal = sum(population))
-
-
-p_moz_o <- p_moz_mod%>%
-  mutate(contact_age_mod = case_when(contact_age == "10-14y" ~ "10-19y",
-                                 contact_age == "15-19y" ~ "10-19y",
-                                 contact_age == "20-24y" ~ "20-29y",
-                                 contact_age == "25-29y" ~ "20-29y",
-                                 contact_age == "30-34y" ~ "30-39y",
-                                 contact_age == "35-39y" ~ "30-39y",
-                                 contact_age == "40-44y" ~ "40-59y",
-                                 contact_age == "45-49y" ~ "40-59y",
-                                 contact_age == "50-54y" ~ "40-59y",
-                                 contact_age == "55-59y" ~ "40-59y",
-                                 contact_age == "60-64y" ~ "60+y",
-                                 contact_age == "65-69y" ~ "60+y",
-                                 contact_age == "70-74y" ~ "60+y",
-                                 contact_age == "75+y" ~ "60+y",
-                                 TRUE ~ contact_age))%>%
-  group_by(participant_age, contact_age_mod)%>%
-  summarise(contact_rate_we = sum(contact_rate))%>%
-  left_join(moz_pop, by = c("participant_age" = "age_group"))%>%
-  rename(par_pop = subtotal)%>%
-  mutate(participant_age_mod = case_when(participant_age == "10-14y" ~ "10-19y",
-                                  participant_age == "15-19y" ~ "10-19y",
-                                  participant_age == "20-24y" ~ "20-29y",
-                                  participant_age == "25-29y" ~ "20-29y",
-                                  participant_age == "30-34y" ~ "30-39y",
-                                  participant_age == "35-39y" ~ "30-39y",
-                                  participant_age == "40-44y" ~ "40-59y",
-                                  participant_age == "45-49y" ~ "40-59y",
-                                  participant_age == "50-54y" ~ "40-59y",
-                                  participant_age == "55-59y" ~ "40-59y",
-                                  participant_age == "60-64y" ~ "60+y",
-                                  participant_age == "65-69y" ~ "60+y",
-                                  participant_age == "70-74y" ~ "60+y",
-                                  participant_age == "75+y" ~ "60+y",
-                                  TRUE ~ participant_age))%>%
-  group_by(participant_age_mod, contact_age_mod)%>%
-  summarise(contact_rate_we = sum(contact_rate_we*par_pop)/sum(par_pop))%>%
-  mutate(participant_age_mod = factor(participant_age_mod, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
-         contact_age_mod = factor(contact_age_mod, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))%>%
-  rename(participant_age = participant_age_mod,
-         contact_age = contact_age_mod)
-
-# Plot matrix
-p_moz_o  %>%
-  ggplot(aes(x = participant_age, y = contact_age, fill = pmin(contact_rate_we, 8.5))) +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7)) +
-  scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
-  geom_tile(color = "white", show.legend = FALSE,
-            lwd = 1.5,
-            linetype = 1) +
-  geom_shadowtext(aes(label = round(contact_rate_we, digits = 1)), 
-                  color = "black", 
-                  bg.color = "white", 
-                  size = 3, 
-                  bg.r = 0.1) +
-  xlab("") +
-  ylab("") +
-  scale_x_discrete(labels = label_wrap(10)) -> p.mat.mo
-
-# GlobalMix data
-mo.co.pa.counts.7 <-  full_join(moz_contact, moz_participant, 
-                              by = c("rec_id", "study_site")) %>%
-  mutate(contact = ifelse(is.na(survey_date), 0, 1))%>%
-  mutate(participant_age = case_when(participant_age == "<6mo" ~ "0-4y",
-                                     participant_age == "6-11mo" ~ "0-4y",
-                                     participant_age == "1-4y" ~ "0-4y",
-                                     TRUE ~ participant_age),
-         participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
-         contact_age = case_when(contact_age == "<6mo" ~ "0-4y",
-                                 contact_age == "6-11mo" ~ "0-4y",
-                                 contact_age == "1-4y" ~ "0-4y",
-                                     TRUE ~ contact_age),
-         contact_age = factor(contact_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))
-
-# Step 1. Create denominator datasets (rural, urban overall)
-moz_participant%>%
-  mutate(participant_age = case_when(participant_age == "<6mo" ~ "0-4y",
-                                     participant_age == "6-11mo" ~ "0-4y",
-                                     participant_age == "1-4y" ~ "0-4y",
-                                     TRUE ~ participant_age),
-         participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))%>%
-  count(participant_age) %>%
-  filter(!is.na(participant_age)) -> o.denoms.byage.mo.7
-
-# Create all combinations of age-age categories
-o.denoms.byage.mo.7 %>% 
-  tidyr::expand(participant_age, participant_age) %>%
-  setNames(c("participant_age", "contact_age")) -> allagecombs.7
-
-#create dfs for contact rate calculation, which include denominators for each age group
-mo.co.pa.counts.7  %>%
-  group_by(participant_age, contact_age) %>%
-  count(participant_age, contact_age, name = "num_contacts") %>%
-  right_join(allagecombs.7, by=c("participant_age", "contact_age"))  %>%
-  left_join(o.denoms.byage.mo.7, by="participant_age") %>%
-  mutate(num_contacts = num_contacts/2,
-         num_contacts = replace_na(num_contacts, 0)) %>%
-  arrange(participant_age, contact_age) %>%
-  mutate(c.rate = (num_contacts) / n) -> mo.co.pa.counts.formatrix.o.7
-
-# Step 2. Adjust for reciprocity
-adjust_for_reciprocity(mo.co.pa.counts.formatrix.o.7, o.denoms.byage.mo.7, 7) -> mo.co.pa.counts.formatrix.o.sym.7
-
-# Step 3. Plot matrices
-mo.co.pa.counts.formatrix.o.sym.7  %>%  
-  subset(!is.na(contact_age)) %>%
-  ggplot(aes(x = participant_age, y = contact_age, fill = pmin(c.rate.sym, 3.5))) +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7)) +
-  scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
-  geom_tile(color = "white", show.legend = FALSE,
-            lwd = 1.5,
-            linetype = 1) +
-  geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
-                  color = "black", 
-                  bg.color = "white", 
-                  size = 3, 
-                  bg.r = 0.1) +
-  xlab("") +
-  ylab("") +
-  scale_x_discrete(labels = label_wrap(10)) -> mat.mo.o.sym.7
+# # Supplemental contact matrices comparison
+# # Modify the Prem data
+# # Take weighted mean for aggregating age groups
+# pop <- read.csv("./Other/popage_total2020.csv")%>%
+#   rename(country = Region..subregion..country.or.area..,
+#          year = Reference.date..as.of.1.July.)%>%
+#   filter(country == "Mozambique"|country == "India"| country == "Guatemala"|country == "Pakistan")
+# 
+# moz_pop <- pop%>%
+#   filter(country == "Mozambique")%>%
+#   t()%>%
+#   as.data.frame()%>%
+#   slice(-1, -2) %>%
+#   setNames("population")%>%
+#   tibble::rownames_to_column("age")%>%
+#   mutate(age_group = case_when(age == "age0" ~ "0-4y",
+#                                age == "age5" ~ "5-9y",
+#                                age == "age10" ~ "10-14y",
+#                                age == "age15" ~ "15-19y",
+#                                age == "age20" ~ "20-24y",
+#                                age == "age25" ~ "25-29y",
+#                                age == "age30" ~ "30-34y",
+#                                age == "age35" ~ "35-39y",
+#                                age == "age40" ~ "40-44y",
+#                                age == "age45" ~ "45-49y",
+#                                age == "age50" ~ "50-54y",
+#                                age == "age55" ~ "55-59y",
+#                                age == "age60" ~ "60-64y",
+#                                age == "age65" ~ "65-69y",
+#                                age == "age70" ~ "70-74y",
+#                                TRUE ~ "75+y"),
+#          population = as.numeric(population))%>%
+#   group_by(age_group)%>%
+#   summarise(subtotal = sum(population))
+# 
+# 
+# p_moz_o <- p_moz_mod%>%
+#   mutate(contact_age_mod = case_when(contact_age == "10-14y" ~ "10-19y",
+#                                  contact_age == "15-19y" ~ "10-19y",
+#                                  contact_age == "20-24y" ~ "20-29y",
+#                                  contact_age == "25-29y" ~ "20-29y",
+#                                  contact_age == "30-34y" ~ "30-39y",
+#                                  contact_age == "35-39y" ~ "30-39y",
+#                                  contact_age == "40-44y" ~ "40-59y",
+#                                  contact_age == "45-49y" ~ "40-59y",
+#                                  contact_age == "50-54y" ~ "40-59y",
+#                                  contact_age == "55-59y" ~ "40-59y",
+#                                  contact_age == "60-64y" ~ "60+y",
+#                                  contact_age == "65-69y" ~ "60+y",
+#                                  contact_age == "70-74y" ~ "60+y",
+#                                  contact_age == "75+y" ~ "60+y",
+#                                  TRUE ~ contact_age))%>%
+#   group_by(participant_age, contact_age_mod)%>%
+#   summarise(contact_rate_we = sum(contact_rate))%>%
+#   left_join(moz_pop, by = c("participant_age" = "age_group"))%>%
+#   rename(par_pop = subtotal)%>%
+#   mutate(participant_age_mod = case_when(participant_age == "10-14y" ~ "10-19y",
+#                                   participant_age == "15-19y" ~ "10-19y",
+#                                   participant_age == "20-24y" ~ "20-29y",
+#                                   participant_age == "25-29y" ~ "20-29y",
+#                                   participant_age == "30-34y" ~ "30-39y",
+#                                   participant_age == "35-39y" ~ "30-39y",
+#                                   participant_age == "40-44y" ~ "40-59y",
+#                                   participant_age == "45-49y" ~ "40-59y",
+#                                   participant_age == "50-54y" ~ "40-59y",
+#                                   participant_age == "55-59y" ~ "40-59y",
+#                                   participant_age == "60-64y" ~ "60+y",
+#                                   participant_age == "65-69y" ~ "60+y",
+#                                   participant_age == "70-74y" ~ "60+y",
+#                                   participant_age == "75+y" ~ "60+y",
+#                                   TRUE ~ participant_age))%>%
+#   group_by(participant_age_mod, contact_age_mod)%>%
+#   summarise(contact_rate_we = sum(contact_rate_we*par_pop)/sum(par_pop))%>%
+#   mutate(participant_age_mod = factor(participant_age_mod, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
+#          contact_age_mod = factor(contact_age_mod, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))%>%
+#   rename(participant_age = participant_age_mod,
+#          contact_age = contact_age_mod)
+# 
+# # Plot matrix
+# p_moz_o  %>%
+#   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(contact_rate_we, 8.5))) +
+#   theme(legend.position = "bottom",
+#         axis.text.x = element_text(size = 7)) +
+#   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
+#   geom_tile(color = "white", show.legend = FALSE,
+#             lwd = 1.5,
+#             linetype = 1) +
+#   geom_shadowtext(aes(label = round(contact_rate_we, digits = 1)), 
+#                   color = "black", 
+#                   bg.color = "white", 
+#                   size = 3, 
+#                   bg.r = 0.1) +
+#   xlab("") +
+#   ylab("") +
+#   scale_x_discrete(labels = label_wrap(10)) -> p.mat.mo
+# 
+# # GlobalMix data
+# mo.co.pa.counts.7 <-  full_join(moz_contact, moz_participant, 
+#                               by = c("rec_id", "study_site")) %>%
+#   mutate(contact = ifelse(is.na(survey_date), 0, 1))%>%
+#   mutate(participant_age = case_when(participant_age == "<6mo" ~ "0-4y",
+#                                      participant_age == "6-11mo" ~ "0-4y",
+#                                      participant_age == "1-4y" ~ "0-4y",
+#                                      TRUE ~ participant_age),
+#          participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
+#          contact_age = case_when(contact_age == "<6mo" ~ "0-4y",
+#                                  contact_age == "6-11mo" ~ "0-4y",
+#                                  contact_age == "1-4y" ~ "0-4y",
+#                                      TRUE ~ contact_age),
+#          contact_age = factor(contact_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))
+# 
+# # Step 1. Create denominator datasets (rural, urban overall)
+# moz_participant%>%
+#   mutate(participant_age = case_when(participant_age == "<6mo" ~ "0-4y",
+#                                      participant_age == "6-11mo" ~ "0-4y",
+#                                      participant_age == "1-4y" ~ "0-4y",
+#                                      TRUE ~ participant_age),
+#          participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))%>%
+#   count(participant_age) %>%
+#   filter(!is.na(participant_age)) -> o.denoms.byage.mo.7
+# 
+# # Create all combinations of age-age categories
+# o.denoms.byage.mo.7 %>% 
+#   tidyr::expand(participant_age, participant_age) %>%
+#   setNames(c("participant_age", "contact_age")) -> allagecombs.7
+# 
+# #create dfs for contact rate calculation, which include denominators for each age group
+# mo.co.pa.counts.7  %>%
+#   group_by(participant_age, contact_age) %>%
+#   count(participant_age, contact_age, name = "num_contacts") %>%
+#   right_join(allagecombs.7, by=c("participant_age", "contact_age"))  %>%
+#   left_join(o.denoms.byage.mo.7, by="participant_age") %>%
+#   mutate(num_contacts = num_contacts/2,
+#          num_contacts = replace_na(num_contacts, 0)) %>%
+#   arrange(participant_age, contact_age) %>%
+#   mutate(c.rate = (num_contacts) / n) -> mo.co.pa.counts.formatrix.o.7
+# 
+# # Step 2. Adjust for reciprocity
+# adjust_for_reciprocity(mo.co.pa.counts.formatrix.o.7, o.denoms.byage.mo.7, 7) -> mo.co.pa.counts.formatrix.o.sym.7
+# 
+# # Step 3. Plot matrices
+# mo.co.pa.counts.formatrix.o.sym.7  %>%  
+#   subset(!is.na(contact_age)) %>%
+#   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(c.rate.sym, 3.5))) +
+#   theme(legend.position = "bottom",
+#         axis.text.x = element_text(size = 7)) +
+#   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
+#   geom_tile(color = "white", show.legend = FALSE,
+#             lwd = 1.5,
+#             linetype = 1) +
+#   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
+#                   color = "black", 
+#                   bg.color = "white", 
+#                   size = 3, 
+#                   bg.r = 0.1) +
+#   xlab("") +
+#   ylab("") +
+#   scale_x_discrete(labels = label_wrap(10)) -> mat.mo.o.sym.7

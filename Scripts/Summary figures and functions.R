@@ -102,15 +102,12 @@ ggarrange(
 
 ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthours.loc.pa.u5,
           nrow = 2, ncol = 2) -> fig2
-fig2
-
 
 ########################
 # FIGURE 3
 ########################
 
 # See modeling file
-
 
 ########################
 # FIGURE 4
@@ -174,49 +171,41 @@ loc_combined_plot <- ggplot(loc_combined, aes(x = dataset, y = percentage, fill 
 multi_plot <- grid.arrange(age_line_plot, loc_combined_plot, ncol = 2)
 
 ########################
-# SUPP FIGURES
+# SUPPLEMENTAL FIGURES
 ########################
 
-
-# Sup 1 - Locations and duration of contact by location by age 
-ggarrange(dur.loc.gt, dur.loc.in, dur.loc.mo, dur.loc.pa,
-          nrow = 2, ncol = 2,
-          common.legend = T, legend = "right") -> sfig1
-sfig1
-
-# Sup 2
-ggarrange(conthours.loc.all.gt, conthours.loc.all.in, conthours.loc.all.mo, conthours.loc.all.pa,
-          nrow = 2, ncol = 2) -> sfig2
-sfig2
-
-# Sup 3 - High-risk contacts
-ggarrange(hr.loc.gt, hr.loc.in, hr.loc.mo, hr.loc.pa, nrow = 2, ncol = 2, common.legend = T, legend = "right") -> sfig3
-
-# For supplemental figures 4-8, see supp4-8 file
-
-# Site-specific figure
-# Matrix
+# Supp 1 - Site-specific contact matrix
 ggarrange(
   ggarrange(mat.gt.r.sym, mat.in.r.sym, mat.mo.r.sym, mat.pa.r.sym, ncol = 4, labels = "Rural", label.y = 1.0),
   ggarrange(mat.gt.u.sym, mat.in.u.sym, mat.mo.u.sym, mat.pa.u.sym, ncol = 4, labels = "Urban", label.y = 1.0),
   nrow = 2
-) -> sfig.mat
+) -> sfig1
 
-# Location
 
+# Supp 2 - Location of contact by site
 ggarrange(
   ggarrange(loc.gt.r, loc.in.r, loc.mo.r, loc.pa.r, ncol = 4, labels = "Rural", label.x = 0.01, label.y = 1.0),
   ggarrange(loc.gt.u, loc.in.u, loc.mo.u, loc.pa.u, ncol = 4, labels = "Urban", label.x = 0.01, label.y = 1.0),
   nrow = 2
-) -> sfig.loc
+) -> sfig2
 
-# Contact matrix comparison figure
+
+# Supp 3 - Locations and duration of contact by location by age 
+ggarrange(dur.loc.gt, dur.loc.in, dur.loc.mo, dur.loc.pa,
+          nrow = 2, ncol = 2,
+          common.legend = T, legend = "right") -> sfig3
+
+
+# Supp 4 - Exposure-hours of all contact
+ggarrange(conthours.loc.all.gt, conthours.loc.all.in, conthours.loc.all.mo, conthours.loc.all.pa,
+          nrow = 2, ncol = 2) -> sfig4
+
+# Supp 5 - Comparison of contact matrix
 ggarrange(
   ggarrange(mat.gt.o.sym.7, mat.in.o.sym.7, mat.mo.o.sym.7, mat.pa.o.sym.7, labels = "GlobalMix", ncol = 4, nrow = 1, label.x = 0.05, label.y = 1.0),
-  ggarrange(p.mat.gt, p.mat.in, p.mat.mo, p.mat.pa, ncol = 4, nrow = 1, labels = "Prem et al., 2021", label.x = 0.01, label.y = 1.0), nrow = 2) -> comp_mat
+  ggarrange(p.mat.gt, p.mat.in, p.mat.mo, p.mat.pa, ncol = 4, nrow = 1, labels = "Prem et al., 2021", label.x = 0.01, label.y = 1.0), nrow = 2) -> sfig5
 
 
-ggsave("C:/Users/mshiiba/OneDrive - Emory/Emory University/PHPA/GlobalMix/Four-country-paper/Revision/output/Final/sfig5.png", plot = comp_mat, dpi = 300, width = 18, height = 9)
 #####################
 # RESULTS TEXT INPUT
 #####################
@@ -229,9 +218,3 @@ combined%>%
   summarise(cont_time = sum(cont_time)/60,
             n = n())%>%
   mutate(mean_cont_time = cont_time/n)
-
-
-##########################################################################
-##########################################################################
-##########################################################################
-##########################################################################

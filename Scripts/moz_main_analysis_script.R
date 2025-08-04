@@ -148,7 +148,7 @@ mo.co.pa.wd <- full_join(mo.pa, mo.co.ed, by = c("rec_id", "study_site"))%>%
   filter(!is.na(dayofweek))
 
 #######################
-# TABLE 2 INPUTS
+# TABLE 2 and SUPPTABLE 4 INPUTS
 #######################
 
 # Contact overall
@@ -515,10 +515,9 @@ cont_time_byageloc.u5 %>%
   theme_bw() -> conthours.loc.mo.u5
 
 
-# See modeling file for Figure 3 and modeling outputs
 
 ###################
-# Figure 4 - update the figure numbering
+# Figure 3
 ###################
 # Panel A
 # Prepare Prem et al. data
@@ -684,100 +683,16 @@ moz_location <- mo.co%>%
          rec_id = as.character(rec_id))
 
 
-######################
+# See modeling file for Figure 4 and modeling outputs
+
+
+#####################################################
 # SUPPLEMENTAL FIGURES
-######################
-
-# Supplemental figure 1
-# Plot of contact duration  by location and age
-mo.co.we <- mo.co%>%
-  left_join(mo.pa%>% dplyr::select(rec_id, participant_age), by = "rec_id")%>%
-  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
-                                     participant_age == "6-11mo" ~ "<5y",
-                                     participant_age == "1-4y" ~ "<5y",
-                                     TRUE ~ participant_age))%>%
-  left_join(mo.we%>% dplyr::select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
-  filter(!is.na(psweight))
-
-mo.co.we  %>%  
-  filter(!duration_contact == "Unknown") %>%
-  as_survey(weights = c(psweight))%>%
-  group_by(location, duration_contact)%>%
-  summarise(prop = survey_prop())%>%
-  ggplot(aes(x = location, fill = duration_contact)) +
-  geom_bar(aes(y = prop), position = "fill", stat = "identity",show.legend = FALSE) +
-  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab("") +
-  ylab("Proportion of contacts") +
-  theme(plot.background = element_rect(fill = "white", color = NA))+
-  ggtitle("Mozambique") +
-  scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.mo
 
 
-# Supplemental figure 2
-# Create exposure-hours variable and then plot by location / age
-location_levels <- unique(mo.co$location)
-age_levels <- unique(mo.pa$participant_age)
-
-mo.co%>%
-  mutate(cont_time = cont_time/(60*2))%>%
-  group_by(rec_id, location)%>%
-  summarise(cont_time = sum(cont_time))%>%
-  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
-  mutate(cont_time = replace_na(cont_time, 0))%>%
-  group_by(location, participant_age)%>%
-  summarise(mean_conthours = mean(cont_time),
-            sd = sd(cont_time),
-            n = n())%>%
-  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
-         uci = mean_conthours + 1.96 * (sd / sqrt(n)))-> cont_time_byageloc_all.mo
-
-
-cont_time_byageloc_all.mo %>%
-  filter(!location == "Unreported") %>%
-  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
-  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
-  geom_errorbar(
-    aes(ymin = lci, ymax = uci),
-    position = position_dodge(width = 0.9),
-    width = 0.6
-  ) +
-  xlab("Participant age") +
-  ylab("Daily exposure-hours") +
-  ylim(0, 19) +
-  scale_fill_manual(values = c("Home"="#F8766D",
-                               "Market / essential" = "#E69F00",
-                               "Other social / leisure" = "#7CAE00",
-                               "School" = "#00BFC4",
-                               "Transit" = "#56B4E9",
-                               "Work" = "#C77CFF",
-                               "Worship" = "#F564E3"))+
-  theme_bw() +
-  ggtitle("Mozambique") -> conthours.loc.all.mo
-
-
-# Supplemental figure 3
-mo.hr.co <- mo.co.pa.counts%>%
-  filter(duration_contact == "1-4 hrs"| duration_contact == ">4 hrs")%>%
-  filter(touch_contact == "Yes")
-
-mo.hr.co %>%
-  filter(!location == "Unreported")%>%
-  ggplot(aes(x = participant_age, fill = location)) +
-  geom_bar(position = "fill", color = "black") +
-  xlab("Participant Age") +
-  ylab("Prop contacts") +
-  labs(title = "Mozambique")+
-  scale_x_discrete(labels = label_wrap(10)) -> hr.loc.mo
-
-mo.hr.co%>%
-  filter(location != "Home")%>%
-  group_by(location)%>%
-  summarize(n = n()) %>%
-  mutate(freq = n / sum(n))
-
-# See supp4-8 file for supplemental figures 4-8.
-## Supp fig contact matrix
+###########################
+# Supplemental Figure 1
+###########################
 # Step 1. Create denominator datasets (Rural)
 mo.pa %>%
   filter(study_site == "Rural")%>%
@@ -860,6 +775,10 @@ mo.co.pa.counts.formatrix.u.sym  %>%
   labs(x = "Participant age", y = "")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.mo.u.sym
 
+
+#########################
+# Supplemental Figure 2
+#########################
 # Location of contact by age
 mo.co.pa.counts  %>%
   filter(study_site == "Rural")%>%
@@ -896,9 +815,81 @@ mo.co.pa.counts  %>%
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.mo.u
 
 
-##################################
-## Supp figure for comparing GlobalMix and Prem contact matrix
-##################################
+#########################
+# Supplemental figure 3
+#########################
+# Plot of contact duration  by location and age
+mo.co.we <- mo.co%>%
+  left_join(mo.pa%>% dplyr::select(rec_id, participant_age), by = "rec_id")%>%
+  mutate(participant_age = case_when(participant_age == "<6mo" ~ "<5y",
+                                     participant_age == "6-11mo" ~ "<5y",
+                                     participant_age == "1-4y" ~ "<5y",
+                                     TRUE ~ participant_age))%>%
+  left_join(mo.we%>% dplyr::select(psweight, participant_age, study_site), by = c("participant_age", "study_site"))%>%
+  filter(!is.na(psweight))
+
+mo.co.we  %>%  
+  filter(!duration_contact == "Unknown") %>%
+  as_survey(weights = c(psweight))%>%
+  group_by(location, duration_contact)%>%
+  summarise(prop = survey_prop())%>%
+  ggplot(aes(x = location, fill = duration_contact)) +
+  geom_bar(aes(y = prop), position = "fill", stat = "identity",show.legend = FALSE) +
+  scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
+  xlab("") +
+  ylab("Proportion of contacts") +
+  theme(plot.background = element_rect(fill = "white", color = NA))+
+  ggtitle("Mozambique") +
+  scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.mo
+
+
+#########################
+# Supplemental figure 4
+#########################
+# Create exposure-hours variable and then plot by location / age
+location_levels <- unique(mo.co$location)
+age_levels <- unique(mo.pa$participant_age)
+
+mo.co%>%
+  mutate(cont_time = cont_time/(60*2))%>%
+  group_by(rec_id, location)%>%
+  summarise(cont_time = sum(cont_time))%>%
+  full_join(id_loc_frame, by = c("rec_id", "location"))%>%
+  mutate(cont_time = replace_na(cont_time, 0))%>%
+  group_by(location, participant_age)%>%
+  summarise(mean_conthours = mean(cont_time),
+            sd = sd(cont_time),
+            n = n())%>%
+  mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
+         uci = mean_conthours + 1.96 * (sd / sqrt(n)))-> cont_time_byageloc_all.mo
+
+
+cont_time_byageloc_all.mo %>%
+  filter(!location == "Unreported") %>%
+  ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
+  geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
+  geom_errorbar(
+    aes(ymin = lci, ymax = uci),
+    position = position_dodge(width = 0.9),
+    width = 0.6
+  ) +
+  xlab("Participant age") +
+  ylab("Daily exposure-hours") +
+  ylim(0, 19) +
+  scale_fill_manual(values = c("Home"="#F8766D",
+                               "Market / essential" = "#E69F00",
+                               "Other social / leisure" = "#7CAE00",
+                               "School" = "#00BFC4",
+                               "Transit" = "#56B4E9",
+                               "Work" = "#C77CFF",
+                               "Worship" = "#F564E3"))+
+  theme_bw() +
+  ggtitle("Mozambique") -> conthours.loc.all.mo
+
+
+#########################
+# Supplemental Figure 5
+#########################
 # Modify the Prem data
 # Take weighted mean for aggregating age groups
 moz_pop <- pop%>%
@@ -1051,6 +1042,14 @@ mo.co.pa.counts.formatrix.o.sym.7  %>%
                   bg.r = 0.1) +
   labs(x = "", y = "", title = "Mozambique")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.mo.o.sym.7
+
+
+############################
+# See Modeling file for supplemental figures 6-8.
+# See supp 9-12 file for supplemental figures 9-12.
+############################
+
+
 #####################
 # RESULTS TEXT INPUTS FOR MANUSCRIPT
 #####################
