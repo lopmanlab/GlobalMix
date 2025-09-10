@@ -386,7 +386,10 @@ pa.co.pa %>%
   scale_fill_manual(values=c("aquamarine4", "steelblue3")) +
   theme_bw() +
   scale_x_discrete(labels = label_wrap(10)) +
-  theme(axis.text.x = element_text(size = 7))-> pa.co.pa.byage.plot
+  theme(axis.text = element_text(size = 5),
+        axis.title = element_text(size = 6),
+        title = element_text(size = 7),
+        text = element_text(family = "Helvetica"))-> pa.co.pa.byage.plot
 
 
 # Figure 1B
@@ -428,7 +431,9 @@ pa.co.pa.counts.formatrix.o.sym  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = c.rate.sym)) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7)) +
+        axis.text = element_text(size = 5),
+        axis.title = element_text(size = 6),
+        text = element_text(family = "Helvetica")) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
             lwd = 1.5,
@@ -436,7 +441,7 @@ pa.co.pa.counts.formatrix.o.sym  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 2, 
                   bg.r = 0.15) +
   xlab("") +
   ylab("") +
@@ -460,7 +465,9 @@ pa.co.pa.counts  %>%
                                "Transit" = "#56B4E9",
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
-  theme(axis.text.x = element_text(size = 7)) -> loc.pa
+  theme(axis.text = element_text(size = 5),
+        axis.title = element_text(size = 6),
+        text = element_text(family = "Helvetica")) -> loc.pa
 
 
 ######################
@@ -488,9 +495,9 @@ pa.co.pa.counts %>%
   mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
          uci = mean_conthours + 1.96 * (sd / sqrt(n)))%>%
   mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y")))%>%
-  filter(!is.na(participant_age))-> cont_time_byageloc.u5
+  filter(!is.na(participant_age))-> pa.cont_time_byageloc.u5
 
-cont_time_byageloc.u5 %>%
+pa.cont_time_byageloc.u5 %>%
   filter(!location == "Unreported") %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
   geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
@@ -500,7 +507,7 @@ cont_time_byageloc.u5 %>%
     width = 0.4
   ) +
   xlab("Participant age") +
-  ylab("Daily exposure-hours") +
+  ylab("") +
   ylim(0, 16) +
   scale_fill_manual(values = c("Home"="#F8766D",
                                "Market / essential" = "#E69F00",
@@ -510,7 +517,11 @@ cont_time_byageloc.u5 %>%
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
   ggtitle("Pakistan") +
-  theme_bw() -> conthours.loc.pa.u5
+  theme_bw()+
+  theme(title = element_text(size = 7),
+        axis.title = element_text(size = 7),
+        axis.text = element_text(size = 7),
+        text = element_text(family = "Helvetica")) -> conthours.loc.pa.u5
 
 
 ###################
@@ -583,22 +594,24 @@ pak_age_table <- rbind(p_pak_table, gm_pak_table)%>%
 
 # Plot the line graph
 pak_age_plot <- ggplot(pak_age_table, aes(x = age_midpoint, y = contact_rate, color = dataset)) +
-  geom_line(size = 1) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
-  scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
+  geom_line(size = 0.5, show.legend = F) +
+  geom_point(size = 0.5, show.legend = F) +
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.3, show.legend = F) +
+  scale_x_continuous("Participant age", breaks = seq(0, 75, by = 10)) +
   #scale_y_continuous("Contact Rate") +
   ylim(0,25)+
   labs(title = "Pakistan",
        color = "Dataset") +
-  ylab("Contact Rate")+
+  ylab("")+
   scale_color_manual(values = c("Prem et al., 2021" = "sienna", "GlobalMix, rural" = 'aquamarine4', "GlobalMix, urban" = "steelblue3"))+
   theme_minimal()+
-  theme(axis.text = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 20),
-        axis.title = element_text(size = 20),
-        title = element_text(size = 20))
+  theme(axis.text = element_text(size = 7),
+        #legend.text = element_text(size = 15),
+        #legend.title = element_text(size = 20),
+        axis.title = element_text(size = 7),
+        title = element_text(size = 7),
+        panel.grid.major = element_line(linewidth = 0.2),
+        panel.grid.minor = element_line(linewidth = 0.1))
 
 
 # Panel B
@@ -713,7 +726,7 @@ pa.co.pa.counts.formatrix.r.sym  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = c.rate.sym)) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7),
+        axis.text.x = element_text(size = 8),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1,
                        name = "daily contacts") +
@@ -723,7 +736,7 @@ pa.co.pa.counts.formatrix.r.sym  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.15) +
   labs(x = "", y = "", title = "Pakistan")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.pa.r.sym
@@ -754,7 +767,7 @@ pa.co.pa.counts.formatrix.u.sym  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = c.rate.sym)) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7),
+        axis.text.x = element_text(size = 8),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, 
                        name = "daily contacts") +
@@ -764,7 +777,7 @@ pa.co.pa.counts.formatrix.u.sym  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.15) +
   labs(x = "Participant age", y = "")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.pa.u.sym
@@ -789,7 +802,7 @@ pa.co.pa.counts  %>%
                                "Transit" = "#56B4E9",
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
-  theme(axis.text.x = element_text(size = 7),
+  theme(axis.text.x = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.pa.r
 
 pa.co.pa.counts  %>%
@@ -807,7 +820,7 @@ pa.co.pa.counts  %>%
                                "Transit" = "#56B4E9",
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
-  theme(axis.text.x = element_text(size = 7),
+  theme(axis.text.x = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.pa.u
 
 
@@ -832,8 +845,7 @@ pa.co.we  %>%
   ggplot(aes(x = location, fill = duration_contact)) +
   geom_bar(aes(y = prop), position = "fill", stat = "identity",show.legend = FALSE) +
   scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab("") +
-  ylab("Proportion of contacts") +
+  labs(x = "", y = "Proportion of contacts", fill = "Contact duration")+
   theme(plot.background = element_rect(fill = "white", color = NA))+
   ggtitle("Pakistan") +
   scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.pa
@@ -881,6 +893,8 @@ cont_time_byageloc_all.pa %>%
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
   theme_bw() +
+  theme(text = element_text(size = 15),
+        title = element_text(size = 17))+
   ggtitle("Pakistan") -> conthours.loc.all.pa
 
 
@@ -963,7 +977,7 @@ p_pak_o <- p_pak_mod%>%
 p_pak_o  %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(contact_rate_we, 7.3))) +
   theme(legend.position = "bottom",
-        axis.text = element_text(size = 7),
+        axis.text = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
@@ -972,7 +986,7 @@ p_pak_o  %>%
   geom_shadowtext(aes(label = round(contact_rate_we, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.1) +
   labs(x = "Participant age", y = "")+
   scale_x_discrete(labels = label_wrap(10)) -> p.mat.pa
@@ -1026,7 +1040,7 @@ pa.co.pa.counts.formatrix.o.sym.7  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = c.rate.sym)) +
   theme(legend.position = "bottom",
-        axis.text = element_text(size = 7),
+        axis.text = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
@@ -1035,7 +1049,7 @@ pa.co.pa.counts.formatrix.o.sym.7  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.1) +
   labs(x = "", y = "", title = "Pakistan")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.pa.o.sym.7
@@ -1052,7 +1066,7 @@ pa.co.pa.counts.formatrix.o.sym.7  %>%
 #####################
 # Physical contact by sex
 pa.co%>%
-  left_join(pa.pa%>% dplyr:select(rec_id, participant_sex), by = "rec_id")%>%
+  left_join(pa.pa%>% dplyr::select(rec_id, participant_sex), by = "rec_id")%>%
   filter(study_site == "Urban")%>%
   group_by(participant_sex, touch_contact)%>%
   summarize(n = n()) %>%

@@ -385,7 +385,12 @@ gt.co.pa %>%
         legend.justification = c("right", "top"),
         legend.box.just = "right",
         legend.margin = margin(6, 6, 6, 6),
-        axis.text.x = element_text(size = 7)) +
+        legend.title = element_text(size = 6),
+        legend.text = element_text(size = 5),
+        title = element_text(size = 7),
+        axis.text = element_text(size = 5),
+        axis.title = element_text(size = 6),
+        text = element_text(family = "Helvetica")) +
   scale_x_discrete(labels = label_wrap(10)) -> gt.co.pa.byage.plot
 
 
@@ -429,7 +434,9 @@ gt.co.pa.counts.formatrix.o.sym  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(c.rate.sym, 2.5))) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7)) +
+        axis.text = element_text(size = 5),
+        axis.title = element_text(size = 6),
+        text = element_text(family = "Helvetica")) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
             lwd = 1.5,
@@ -437,7 +444,7 @@ gt.co.pa.counts.formatrix.o.sym  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 2, 
                   bg.r = 0.15) +
   scale_color_identity() +
   xlab("") +
@@ -461,7 +468,9 @@ gt.co.pa.counts  %>%
                                "Transit" = "#56B4E9",
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
-  theme(axis.text.x = element_text(size = 7)) -> loc.gt
+  theme(axis.text = element_text(size = 5),
+        text = element_text(family = "Helvetica"),
+        axis.title = element_text(size = 6)) -> loc.gt
 
 
 ######################
@@ -490,9 +499,9 @@ gt.co.pa.counts %>%
   mutate(lci = mean_conthours - 1.96 * (sd / sqrt(n)),
          uci = mean_conthours + 1.96 * (sd / sqrt(n)))%>%
   mutate(participant_age = factor(participant_age, levels = c("<6mo", "6-11mo", "1-4y"))) %>%
-  filter(!is.na(participant_age))-> cont_time_byageloc.u5
+  filter(!is.na(participant_age))-> gt.cont_time_byageloc.u5
 
-cont_time_byageloc.u5 %>%
+gt.cont_time_byageloc.u5 %>%
   filter(!location == "Unreported") %>%
   ggplot(aes(x = participant_age, y = mean_conthours, fill = location)) +
   geom_bar(position = position_dodge(width = 0.9), stat = "identity", color = "black", show.legend = F) +
@@ -501,7 +510,7 @@ cont_time_byageloc.u5 %>%
     position = position_dodge(width = 0.9),
     width = 0.4
   ) +
-  xlab("Participant age") +
+  xlab("") +
   ylab("Daily exposure-hours") +
   ylim(0, 10) +
   scale_fill_manual(values = c("Home"="#F8766D",
@@ -512,7 +521,11 @@ cont_time_byageloc.u5 %>%
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
   ggtitle("Guatemala") +
-  theme_bw() -> conthours.loc.gt.u5
+  theme_bw()+
+  theme(title = element_text(size = 7),
+        axis.title = element_text(size = 7),
+        axis.text = element_text(size = 7),
+        text = element_text(family = "Helvetica")) -> conthours.loc.gt.u5
 
 
 ###################
@@ -586,10 +599,10 @@ gt_age_table <- rbind(p_gt_table, gm_gt_table)%>%
 
 # Plot the line graph
 gt_age_plot <- ggplot(gt_age_table, aes(x = age_midpoint, y = contact_rate, color = dataset)) +
-  geom_line(size = 1) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.7) +
-  scale_x_continuous("Participant age", breaks = seq(0, 75, by = 5)) +
+  geom_line(size = 0.5, show.legend = F) +
+  geom_point(size = 0.5, show.legend = F) +
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci), width = 0.5, size = 0.3, show.legend = F) +
+  scale_x_continuous("Participant age", breaks = seq(0, 75, by = 10)) +
   #scale_y_continuous("Contact Rate") +
   ylim(0,25)+
   labs(title = "Guatemala",
@@ -597,11 +610,14 @@ gt_age_plot <- ggplot(gt_age_table, aes(x = age_midpoint, y = contact_rate, colo
   ylab("Contact Rate")+
   scale_color_manual(values = c("Prem et al., 2021" = "sienna", "GlobalMix, rural" = 'aquamarine4', "GlobalMix, urban" = "steelblue3"))+
   theme_minimal()+
-  theme(axis.text = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 20),
-        axis.title = element_text(size = 20),
-        title = element_text(size = 20))
+  theme(axis.text = element_text(size = 7),
+        #legend.text = element_text(size = 15),
+        #legend.title = element_text(size = 20),
+        axis.title = element_text(size = 7),
+        title = element_text(size = 7),
+        panel.grid.major = element_line(linewidth = 0.2),
+        panel.grid.minor = element_line(linewidth = 0.1)
+        )
 
 
 # Panel B
@@ -721,7 +737,7 @@ gt.co.pa.counts.formatrix.r.sym  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = c.rate.sym)) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7),
+        axis.text.x = element_text(size = 8),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
@@ -730,7 +746,7 @@ gt.co.pa.counts.formatrix.r.sym  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.15) +
   labs(x = "", y = "Contact age", title = "Guatemala")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.gt.r.sym
@@ -762,7 +778,7 @@ gt.co.pa.counts.formatrix.u.sym  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(c.rate.sym, 2.3))) +
   theme(legend.position = "bottom",
-        axis.text.x = element_text(size = 7),
+        axis.text.x = element_text(size = 8),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
@@ -771,7 +787,7 @@ gt.co.pa.counts.formatrix.u.sym  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.15) +
   labs(x = "Participant age", y = "Contact age")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.gt.u.sym
@@ -794,7 +810,7 @@ gt.co.pa.counts  %>%
                                "Transit" = "#56B4E9",
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
-  theme(axis.text.x = element_text(size = 7),
+  theme(axis.text.x = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.gt.r
 
 gt.co.pa.counts  %>%
@@ -811,7 +827,7 @@ gt.co.pa.counts  %>%
                                "Transit" = "#56B4E9",
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
-  theme(axis.text.x = element_text(size = 7),
+  theme(axis.text.x = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) -> loc.gt.u
 
 
@@ -836,8 +852,7 @@ gt.co.we  %>%
   ggplot(aes(x = location, fill = duration_contact)) +
   geom_bar(aes(y = prop), position = "fill", stat = "identity",show.legend = FALSE) +
   scale_x_discrete(limits = c("Home","School","Work", 'Market / essential', "Worship", "Transit", "Other social / leisure"), labels = label_wrap(10)) +
-  xlab("") +
-  ylab("Proportion of contacts") +
+  labs(x = "", y = "Proportion of contacts", fill = "Contact duration")+
   theme(plot.background = element_rect(fill = "white", color = NA))+
   ggtitle("Guatemala") +
   scale_fill_viridis(option = "G", discrete = TRUE, direction = -1, alpha = 0.9, begin = 0.3, end = 0.9) -> dur.loc.gt
@@ -880,6 +895,8 @@ cont_time_byageloc_all.gt %>%
                                "Work" = "#C77CFF",
                                "Worship" = "#F564E3"))+
   theme_bw() +
+  theme(text = element_text(size = 15),
+        title = element_text(size = 17))+
   ggtitle("Guatemala") -> conthours.loc.all.gt
 
 
@@ -964,7 +981,7 @@ p_gt_o <- p_gt_mod%>%
 p_gt_o  %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(contact_rate_we, 7))) +
   theme(legend.position = "bottom",
-        axis.text = element_text(size = 7),
+        axis.text = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
@@ -973,7 +990,7 @@ p_gt_o  %>%
   geom_shadowtext(aes(label = round(contact_rate_we, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.1) +
   xlab("Participant age") +
   ylab("Contact age") +
@@ -1029,7 +1046,7 @@ gt.co.pa.counts.formatrix.o.sym.7  %>%
   subset(!is.na(contact_age)) %>%
   ggplot(aes(x = participant_age, y = contact_age, fill = c.rate.sym)) +
   theme(legend.position = "bottom",
-        axis.text = element_text(size = 7),
+        axis.text = element_text(size = 9),
         plot.margin = margin(t = 20, r = 10, b = 10, l = 10)) +
   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
   geom_tile(color = "white", show.legend = FALSE,
@@ -1038,7 +1055,7 @@ gt.co.pa.counts.formatrix.o.sym.7  %>%
   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
                   color = "black", 
                   bg.color = "white", 
-                  size = 3, 
+                  size = 4, 
                   bg.r = 0.1) +
   labs(x = "", y = "Contact age", title = "Guatemala")+
   scale_x_discrete(labels = label_wrap(10)) -> mat.gt.o.sym.7

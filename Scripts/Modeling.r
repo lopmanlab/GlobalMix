@@ -12,6 +12,7 @@ library(EpiModel)
 library(ggplot2)
 library(patchwork)
 library(ggtext)
+library(EpiEstim)
 
 # --- Model structure
 sirmod <- function(t, t0, parms) {
@@ -1129,8 +1130,11 @@ all.plot <- ggplot(all.values, aes(x = Category, y = Value, fill = Site)) +
   scale_fill_manual(values = c("GlobalMix, rural" = "aquamarine4", "GlobalMix, urban" = "steelblue3", "Prem et al., 2021" = "sienna")) +
   theme_minimal() +
   theme(
-    strip.text = element_text(size = 12, face = "bold"),
-    #axis.text.x = element_text(angle = 45, hjust = 1)
+    strip.text = element_text(size = 7, face = "bold"),
+    axis.text = element_text(size = 7),
+    axis.title = element_text(size = 7),
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 7)
   ) +
   ylim(0, 1)
 
@@ -1193,39 +1197,39 @@ df.prem.pak <- df.prem.pak %>%
 
 
 df_gt <- bind_rows(
-  df.no.rur.gt %>% select(time, gt.rur.inc) %>%
+  df.no.rur.gt %>% dplyr::select(time, gt.rur.inc) %>%
     rename(incidence = gt.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "Guatemala"),
-  df.no.urb.gt %>% select(time, gt.urb.inc) %>%
+  df.no.urb.gt %>% dplyr::select(time, gt.urb.inc) %>%
     rename(incidence = gt.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "Guatemala"),
-  df.prem.gt %>% select(time, gt.prem.inc) %>%
+  df.prem.gt %>% dplyr::select(time, gt.prem.inc) %>%
     rename(incidence = gt.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "Guatemala")
 )
 
 # Repeat for each country
 df_ind <- bind_rows(
-  df.no.rur.ind %>% select(time, ind.rur.inc) %>%
+  df.no.rur.ind %>% dplyr::select(time, ind.rur.inc) %>%
     rename(incidence = ind.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "India"),
-  df.no.urb.ind %>% select(time, ind.urb.inc) %>%
+  df.no.urb.ind %>% dplyr::select(time, ind.urb.inc) %>%
     rename(incidence = ind.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "India"),
-  df.prem.ind %>% select(time, ind.prem.inc) %>%
+  df.prem.ind %>% dplyr::select(time, ind.prem.inc) %>%
     rename(incidence = ind.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "India")
 )
 
 df_moz <- bind_rows(
-  df.no.rur.moz %>% select(time, moz.rur.inc) %>%
+  df.no.rur.moz %>% dplyr::select(time, moz.rur.inc) %>%
     rename(incidence = moz.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "Mozambique"),
-  df.no.urb.moz %>% select(time, moz.urb.inc) %>%
+  df.no.urb.moz %>% dplyr::select(time, moz.urb.inc) %>%
     rename(incidence = moz.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "Mozambique"),
-  df.prem.moz %>% select(time, moz.prem.inc) %>%
+  df.prem.moz %>% dplyr::select(time, moz.prem.inc) %>%
     rename(incidence = moz.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "Mozambique")
 )
 
 df_pak <- bind_rows(
-  df.no.rur.pak %>% select(time, pak.rur.inc) %>%
+  df.no.rur.pak %>% dplyr::select(time, pak.rur.inc) %>%
     rename(incidence = pak.rur.inc) %>% mutate(area = "GlobalMix, rural", country = "Pakistan"),
-  df.no.urb.pak %>% select(time, pak.urb.inc) %>%
+  df.no.urb.pak %>% dplyr::select(time, pak.urb.inc) %>%
     rename(incidence = pak.urb.inc) %>% mutate(area = "GlobalMix, urban", country = "Pakistan"),
-  df.prem.pak %>% select(time, pak.prem.inc) %>%
+  df.prem.pak %>% dplyr::select(time, pak.prem.inc) %>%
     rename(incidence = pak.prem.inc) %>% mutate(area = "Prem et al., 2021", country = "Pakistan")
 )
 
@@ -1245,7 +1249,7 @@ ggplot(df_all, aes(x = time, y = incidence, color = area)) +
     axis.text.x = element_text(angle = 45, hjust = 1),
     legend.position = "bottom",
     plot.title = element_text(hjust = 0.5)
-  )
+  ) -> sfig7
 
 
 # extract max peak and timing
@@ -1312,7 +1316,7 @@ process_epi_data <- function(df, country, area, mean_si = 2.6, std_si = 1.5, max
   df <- df %>%
     mutate(si.flow2 = ifelse(si.flow<1, 0, si.flow)) %>%
     rename(dates = time, I = si.flow2) %>%
-    select(dates, I) %>%
+    dplyr::select(dates, I) %>%
     filter(dates <= max_time)
   
   all.dates <- data.frame(dates = 1:max_time)
@@ -1330,7 +1334,7 @@ process_epi_data <- function(df, country, area, mean_si = 2.6, std_si = 1.5, max
            mean_r = `Mean(R)`,
            lq = `Quantile.0.025(R)`,
            uq = `Quantile.0.975(R)`) %>%
-    select(t_end, mean_r, lq, uq, area, country)
+    dplyr::select(t_end, mean_r, lq, uq, area, country)
   
   return(out)
 }
@@ -1339,7 +1343,7 @@ process_epi_data <- function(df, country, area, mean_si = 2.6, std_si = 1.5, max
   df <- df %>%
     mutate(si.flow2 = ifelse(si.flow < 1, 0, si.flow)) %>%
     rename(dates = time, I = si.flow2) %>%
-    select(dates, I) %>%
+    dplyr::select(dates, I) %>%
     filter(dates <= max_time)
   
   all.dates <- data.frame(dates = 2:max_time)
@@ -1366,7 +1370,7 @@ process_epi_data <- function(df, country, area, mean_si = 2.6, std_si = 1.5, max
              mean_r = `Mean(R)`,
              lq = `Quantile.0.025(R)`,
              uq = `Quantile.0.975(R)`) %>%
-      select(t_end, mean_r, lq, uq, area, country)
+      dplyr::select(t_end, mean_r, lq, uq, area, country)
   } else {
     out <- data.frame(t_end = numeric(0), mean_r = numeric(0),
                       lq = numeric(0), uq = numeric(0),
@@ -1376,31 +1380,31 @@ process_epi_data <- function(df, country, area, mean_si = 2.6, std_si = 1.5, max
   return(out)
 }
 # Guatemala
-df_gt_rur <- process_epi_data(df.no.rur.gt, country = "Guatemala", area = "Rural", max_time = 730)
-df_gt_urb <- process_epi_data(df.no.urb.gt, country = "Guatemala", area = "Urban", max_time = 730)
-df_gt_prem <- process_epi_data(df.prem.gt, country = "Guatemala", area = "Prem", max_time = 730)
+df_gt_rur <- process_epi_data(df.no.rur.gt, country = "Guatemala", area = "GlobalMix, rural", max_time = 730)
+df_gt_urb <- process_epi_data(df.no.urb.gt, country = "Guatemala", area = "GlobalMix, urban", max_time = 730)
+df_gt_prem <- process_epi_data(df.prem.gt, country = "Guatemala", area = "Prem et al., 2021", max_time = 730)
 
 # Combine all Guatemala
 df_gt <- bind_rows(df_gt_rur, df_gt_urb, df_gt_prem)
 
 # Repeat for India
-df_ind_rur <- process_epi_data(df.no.rur.ind, country = "India", area = "Rural", max_time = 730)
-df_ind_urb <- process_epi_data(df.no.urb.ind, country = "India", area = "Urban", max_time = 730)
-df_ind_prem <- process_epi_data(df.prem.ind, country = "India", area = "Prem", max_time = 730)
+df_ind_rur <- process_epi_data(df.no.rur.ind, country = "India", area = "GlobalMix, rural", max_time = 730)
+df_ind_urb <- process_epi_data(df.no.urb.ind, country = "India", area = "GlobalMix urban", max_time = 730)
+df_ind_prem <- process_epi_data(df.prem.ind, country = "India", area = "Prem et al., 2021", max_time = 730)
 
 df_ind <- bind_rows(df_ind_rur, df_ind_urb, df_ind_prem)
 
 # Same for Mozambique
-df_moz_rur <- process_epi_data(df.no.rur.moz, country = "Mozambique", area = "Rural", max_time = 730)
-df_moz_urb <- process_epi_data(df.no.urb.moz, country = "Mozambique", area = "Urban", max_time = 730)
-df_moz_prem <- process_epi_data(df.prem.moz, country = "Mozambique", area = "Prem", max_time = 730)
+df_moz_rur <- process_epi_data(df.no.rur.moz, country = "Mozambique", area = "GlobalMix, rural", max_time = 730)
+df_moz_urb <- process_epi_data(df.no.urb.moz, country = "Mozambique", area = "GlobalMix, urban", max_time = 730)
+df_moz_prem <- process_epi_data(df.prem.moz, country = "Mozambique", area = "Prem et al., 2021", max_time = 730)
 
 df_moz <- bind_rows(df_moz_rur, df_moz_urb, df_moz_prem)
 
 # Same for Pakistan
-df_pak_rur <- process_epi_data(df.no.rur.pak, country = "Pakistan", area = "Rural", max_time = 730)
-df_pak_urb <- process_epi_data(df.no.urb.pak, country = "Pakistan", area = "Urban", max_time = 730)
-df_pak_prem <- process_epi_data(df.prem.pak, country = "Pakistan", area = "Prem", max_time = 730)
+df_pak_rur <- process_epi_data(df.no.rur.pak, country = "Pakistan", area = "GlobalMix, rural", max_time = 730)
+df_pak_urb <- process_epi_data(df.no.urb.pak, country = "Pakistan", area = "GlobalMix, urban", max_time = 730)
+df_pak_prem <- process_epi_data(df.prem.pak, country = "Pakistan", area = "Prem et al., 2021", max_time = 730)
 
 df_pak <- bind_rows(df_pak_rur, df_pak_urb, df_pak_prem)
 
@@ -1413,11 +1417,11 @@ ggplot(df_all_epi, aes(x = t_end, y = mean_r, color = area)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
   facet_wrap(~ country, ncol = 2, scales = "free") +
   labs(x = "Time", y = "Estimated R", color = NULL, fill = NULL) + 
-  scale_color_manual(values = c("Rural" = "aquamarine4", "Urban" = "steelblue3", "Prem" = "sienna")) +
+  scale_color_manual(values = c("GlobalMix, rural" = "aquamarine4", "GlobalMix, urban" = "steelblue3", "Prem et al., 2021" = "sienna")) +
   #scale_fill_manual(values = c("Rural" = "aquamarine4", "Urban" = "steelblue3", "Prem" = "sienna")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        legend.position = "bottom") 
+        legend.position = "bottom") ->sfig8
 
 # --- proportion of infections
 # gt

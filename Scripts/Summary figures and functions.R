@@ -103,23 +103,30 @@ ggarrange(
 ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthours.loc.pa.u5,
           nrow = 2, ncol = 2) -> fig2
 
+
+
+annotate_figure(
+  ggarrange(conthours.loc.gt.u5, conthours.loc.in.u5, conthours.loc.mo.u5, conthours.loc.pa.u5,
+            nrow = 2, ncol = 2),
+  bottom = text_grob(""),  # dummy text to add space
+  fig.lab = "",            # optional title
+  fig.lab.face = "bold",
+  padding = unit(1, "cm")  # add padding around the figure
+) -> fig2
+
+
 ########################
 # FIGURE 3
 ########################
-
-# See modeling file
-
-########################
-# FIGURE 4
-########################
 # Panel A
 title_grob <- textGrob("A",
-                       gp = gpar(fontsize = 30, fontface = "bold"),
+                       gp = gpar(fontsize = 7, fontface = "bold"),
                        just = "left",
                        x = 0.02,
                        y = 0.5)
 
 age_line_plot <- grid.arrange(gt_age_plot, ind_age_plot,moz_age_plot, pak_age_plot,ncol = 2, top = title_grob)
+
 
 # Panel B
 # Combine four country
@@ -159,16 +166,24 @@ loc_combined_plot <- ggplot(loc_combined, aes(x = dataset, y = percentage, fill 
                                "Unreported" = "#8B4513"))+
   theme_minimal()+
   theme(plot.background = element_rect(fill = "white", color = NA),
-        plot.title = element_text(hjust = 0, size = 30, face = "bold"))+
-  theme(axis.text = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 20),
-        axis.title = element_text(size = 20),
-        title = element_text(size = 20),
-        strip.text = element_text(size = 20))
+        plot.title = element_text(hjust = 0, size = 7, face = "bold"))+
+  theme(axis.text = element_text(size = 7),
+        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 7),
+        legend.position = "right",
+        legend.key.size = unit(0.2, "cm"),
+        axis.title = element_text(size = 7),
+        title = element_text(size = 7),
+        strip.text = element_text(size = 7))
 
 # Two-panel plot
-multi_plot <- grid.arrange(age_line_plot, loc_combined_plot, ncol = 2)
+multi_plot <- grid.arrange(age_line_plot, loc_combined_plot, ncol = 1)
+
+########################
+# Figure 4
+########################
+# See modeling file
+
 
 ########################
 # SUPPLEMENTAL FIGURES

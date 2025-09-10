@@ -222,7 +222,7 @@ gt_school <- gt_stringency%>%
   mutate(Status_change = C1M_School.closing != lag(C1M_School.closing, default = first(C1M_School.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C1M_School.closing)
+  dplyr::select(Start_date = Date, End_date, Status = C1M_School.closing)
 
 ind_school <- ind_stringency%>%
   mutate(C1M_School.closing = ifelse(C1M_School.closing == 0, 0, 1),
@@ -230,7 +230,7 @@ ind_school <- ind_stringency%>%
   mutate(Status_change = C1M_School.closing != lag(C1M_School.closing, default = first(C1M_School.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(ind_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C1M_School.closing)
+  dplyr::select(Start_date = Date, End_date, Status = C1M_School.closing)
 
 moz_school <- moz_stringency%>%
   mutate(C1M_School.closing = ifelse(C1M_School.closing == 0, 0, 1),
@@ -238,7 +238,7 @@ moz_school <- moz_stringency%>%
   mutate(Status_change = C1M_School.closing != lag(C1M_School.closing, default = first(C1M_School.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(moz_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C1M_School.closing)
+  dplyr::select(Start_date = Date, End_date, Status = C1M_School.closing)
 
 # Workplace closure
 gt_work <- gt_stringency%>%
@@ -247,7 +247,7 @@ gt_work <- gt_stringency%>%
   mutate(Status_change = C2M_Workplace.closing != lag(C2M_Workplace.closing, default = first(C2M_Workplace.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C2M_Workplace.closing)
+  dplyr::select(Start_date = Date, End_date, Status = C2M_Workplace.closing)
 
 ind_work <- ind_stringency%>%
   mutate(C2M_Workplace.closing = ifelse(C2M_Workplace.closing == 0, 0, 1),
@@ -255,7 +255,7 @@ ind_work <- ind_stringency%>%
   mutate(Status_change = C2M_Workplace.closing != lag(C2M_Workplace.closing, default = first(C2M_Workplace.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(ind_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C2M_Workplace.closing)
+  dplyr::select(Start_date = Date, End_date, Status = C2M_Workplace.closing)
 
 moz_work <- moz_stringency%>%
   mutate(C2M_Workplace.closing = ifelse(C2M_Workplace.closing == 0, 0, 1),
@@ -263,7 +263,7 @@ moz_work <- moz_stringency%>%
   mutate(Status_change = C2M_Workplace.closing != lag(C2M_Workplace.closing, default = first(C2M_Workplace.closing))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(moz_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C2M_Workplace.closing)
+  dplyr::select(Start_date = Date, End_date, Status = C2M_Workplace.closing)
 
 
 # Public events restriction
@@ -273,7 +273,7 @@ gt_event <- gt_stringency%>%
   mutate(Status_change = C3M_Cancel.public.events != lag(C3M_Cancel.public.events, default = first(C3M_Cancel.public.events))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C3M_Cancel.public.events)
+  dplyr::select(Start_date = Date, End_date, Status = C3M_Cancel.public.events)
 
 ind_event <- ind_stringency%>%
   mutate(C3M_Cancel.public.events = ifelse(C3M_Cancel.public.events == 0, 0, 1),
@@ -281,7 +281,7 @@ ind_event <- ind_stringency%>%
   mutate(Status_change = C3M_Cancel.public.events != lag(C3M_Cancel.public.events, default = first(C3M_Cancel.public.events))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(ind_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C3M_Cancel.public.events)
+  dplyr::select(Start_date = Date, End_date, Status = C3M_Cancel.public.events)
 
 moz_event <- moz_stringency%>%
   mutate(C3M_Cancel.public.events = ifelse(C3M_Cancel.public.events == 0, 0, 1),
@@ -289,7 +289,7 @@ moz_event <- moz_stringency%>%
   mutate(Status_change = C3M_Cancel.public.events != lag(C3M_Cancel.public.events, default = first(C3M_Cancel.public.events))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(moz_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C3M_Cancel.public.events)
+  dplyr::select(Start_date = Date, End_date, Status = C3M_Cancel.public.events)
 
 # Gathering restriction
 gt_gather <- gt_stringency%>%
@@ -298,7 +298,7 @@ gt_gather <- gt_stringency%>%
   mutate(Status_change = C4M_Restrictions.on.gatherings != lag(C4M_Restrictions.on.gatherings, default = first(C4M_Restrictions.on.gatherings))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C4M_Restrictions.on.gatherings)
+  dplyr::select(Start_date = Date, End_date, Status = C4M_Restrictions.on.gatherings)
 
 ind_gather <- ind_stringency%>%
   mutate(C4M_Restrictions.on.gatherings = ifelse(C4M_Restrictions.on.gatherings == 0, 0, 1),
@@ -306,7 +306,7 @@ ind_gather <- ind_stringency%>%
   mutate(Status_change = C4M_Restrictions.on.gatherings != lag(C4M_Restrictions.on.gatherings, default = first(C4M_Restrictions.on.gatherings))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(ind_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C4M_Restrictions.on.gatherings)
+  dplyr::select(Start_date = Date, End_date, Status = C4M_Restrictions.on.gatherings)
 
 moz_gather <- moz_stringency%>%
   mutate(C4M_Restrictions.on.gatherings = ifelse(C4M_Restrictions.on.gatherings == 0, 0, 1),
@@ -314,7 +314,7 @@ moz_gather <- moz_stringency%>%
   mutate(Status_change = C4M_Restrictions.on.gatherings != lag(C4M_Restrictions.on.gatherings, default = first(C4M_Restrictions.on.gatherings))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(moz_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C4M_Restrictions.on.gatherings)
+  dplyr::select(Start_date = Date, End_date, Status = C4M_Restrictions.on.gatherings)
 
 # Public transportation closure
 gt_transport <- gt_stringency%>%
@@ -323,7 +323,7 @@ gt_transport <- gt_stringency%>%
   mutate(Status_change = C5M_Close.public.transport != lag(C5M_Close.public.transport, default = first(C5M_Close.public.transport))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C5M_Close.public.transport)
+  dplyr::select(Start_date = Date, End_date, Status = C5M_Close.public.transport)
 
 ind_transport <- ind_stringency%>%
   mutate(C5M_Close.public.transport = ifelse(C5M_Close.public.transport == 0, 0, 1),
@@ -331,7 +331,7 @@ ind_transport <- ind_stringency%>%
   mutate(Status_change = C5M_Close.public.transport != lag(C5M_Close.public.transport, default = first(C5M_Close.public.transport))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(ind_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C5M_Close.public.transport)
+  dplyr::select(Start_date = Date, End_date, Status = C5M_Close.public.transport)
 
 moz_transport <- moz_stringency%>%
   mutate(C5M_Close.public.transport = ifelse(C5M_Close.public.transport == 0, 0, 1),
@@ -339,7 +339,7 @@ moz_transport <- moz_stringency%>%
   mutate(Status_change = C5M_Close.public.transport != lag(C5M_Close.public.transport, default = first(C5M_Close.public.transport))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(moz_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C5M_Close.public.transport)
+  dplyr::select(Start_date = Date, End_date, Status = C5M_Close.public.transport)
 
 # Stay-at-home requirement
 gt_stayhome <- gt_stringency%>%
@@ -348,7 +348,7 @@ gt_stayhome <- gt_stringency%>%
   mutate(Status_change = C6M_Stay.at.home.requirements != lag(C6M_Stay.at.home.requirements, default = first(C6M_Stay.at.home.requirements))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(gt_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C6M_Stay.at.home.requirements)
+  dplyr::select(Start_date = Date, End_date, Status = C6M_Stay.at.home.requirements)
 
 ind_stayhome <- ind_stringency%>%
   mutate(C6M_Stay.at.home.requirements = ifelse(C6M_Stay.at.home.requirements == 0, 0, 1),
@@ -356,7 +356,7 @@ ind_stayhome <- ind_stringency%>%
   mutate(Status_change = C6M_Stay.at.home.requirements != lag(C6M_Stay.at.home.requirements, default = first(C6M_Stay.at.home.requirements))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(ind_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C6M_Stay.at.home.requirements)
+  dplyr::select(Start_date = Date, End_date, Status = C6M_Stay.at.home.requirements)
 
 moz_stayhome <- moz_stringency%>%
   mutate(C6M_Stay.at.home.requirements = ifelse(C6M_Stay.at.home.requirements == 0, 0, 1),
@@ -364,7 +364,7 @@ moz_stayhome <- moz_stringency%>%
   mutate(Status_change = C6M_Stay.at.home.requirements != lag(C6M_Stay.at.home.requirements, default = first(C6M_Stay.at.home.requirements))) %>%
   filter(Status_change | row_number() == 1) %>% # Include the first period
   mutate(End_date = if_else(is.na(lead(Date)), max(moz_stringency$Date), lead(Date) - 1)) %>% # Adjust End_date to be the day before the next Start_date
-  select(Start_date = Date, End_date, Status = C6M_Stay.at.home.requirements)
+  dplyr::select(Start_date = Date, End_date, Status = C6M_Stay.at.home.requirements)
 
 # Combine all the measurements
 gt_restriction <- bind_rows(
@@ -397,7 +397,7 @@ moz_restriction <- bind_rows(
 # Count the number of contacts
 gt_contact_count <- gt_contact%>%
   left_join(gt_participant, by = "rec_id")%>%
-  select(-study_site.y)%>%
+  dplyr::select(-study_site.y)%>%
   rename(study_site = study_site.x)%>%
   group_by(date_particpant_enrolled)%>%
   summarise(contacts = n())%>%
@@ -405,14 +405,14 @@ gt_contact_count <- gt_contact%>%
 
 ind_contact_count <- ind_contact%>%
   left_join(ind_participant, by = "rec_id")%>%
-  select(-study_site.y)%>%
+  dplyr::select(-study_site.y)%>%
   rename(study_site = study_site.x)%>%
   group_by(date_participant_enrolled)%>%
   summarise(contacts = n())
 
 moz_contact_count <- moz_contact%>%
   left_join(moz_participant, by = "rec_id")%>%
-  select(-study_site.y)%>%
+  dplyr::select(-study_site.y)%>%
   rename(study_site = study_site.x)%>%
   group_by(date_participant_enrolled)%>%
   summarise(contacts = n())
@@ -494,166 +494,3 @@ moz_str_date_plot <- ggplot(moz_contact_count, aes(x = date_participant_enrolled
         legend.position = "none",
         plot.background = element_rect(color = "white"))+
   facet_wrap(~type)
-
-
-
-
-
-# # Supplemental contact matrices comparison
-# # Modify the Prem data
-# # Take weighted mean for aggregating age groups
-# pop <- read.csv("./Other/popage_total2020.csv")%>%
-#   rename(country = Region..subregion..country.or.area..,
-#          year = Reference.date..as.of.1.July.)%>%
-#   filter(country == "Mozambique"|country == "India"| country == "Guatemala"|country == "Pakistan")
-# 
-# moz_pop <- pop%>%
-#   filter(country == "Mozambique")%>%
-#   t()%>%
-#   as.data.frame()%>%
-#   slice(-1, -2) %>%
-#   setNames("population")%>%
-#   tibble::rownames_to_column("age")%>%
-#   mutate(age_group = case_when(age == "age0" ~ "0-4y",
-#                                age == "age5" ~ "5-9y",
-#                                age == "age10" ~ "10-14y",
-#                                age == "age15" ~ "15-19y",
-#                                age == "age20" ~ "20-24y",
-#                                age == "age25" ~ "25-29y",
-#                                age == "age30" ~ "30-34y",
-#                                age == "age35" ~ "35-39y",
-#                                age == "age40" ~ "40-44y",
-#                                age == "age45" ~ "45-49y",
-#                                age == "age50" ~ "50-54y",
-#                                age == "age55" ~ "55-59y",
-#                                age == "age60" ~ "60-64y",
-#                                age == "age65" ~ "65-69y",
-#                                age == "age70" ~ "70-74y",
-#                                TRUE ~ "75+y"),
-#          population = as.numeric(population))%>%
-#   group_by(age_group)%>%
-#   summarise(subtotal = sum(population))
-# 
-# 
-# p_moz_o <- p_moz_mod%>%
-#   mutate(contact_age_mod = case_when(contact_age == "10-14y" ~ "10-19y",
-#                                  contact_age == "15-19y" ~ "10-19y",
-#                                  contact_age == "20-24y" ~ "20-29y",
-#                                  contact_age == "25-29y" ~ "20-29y",
-#                                  contact_age == "30-34y" ~ "30-39y",
-#                                  contact_age == "35-39y" ~ "30-39y",
-#                                  contact_age == "40-44y" ~ "40-59y",
-#                                  contact_age == "45-49y" ~ "40-59y",
-#                                  contact_age == "50-54y" ~ "40-59y",
-#                                  contact_age == "55-59y" ~ "40-59y",
-#                                  contact_age == "60-64y" ~ "60+y",
-#                                  contact_age == "65-69y" ~ "60+y",
-#                                  contact_age == "70-74y" ~ "60+y",
-#                                  contact_age == "75+y" ~ "60+y",
-#                                  TRUE ~ contact_age))%>%
-#   group_by(participant_age, contact_age_mod)%>%
-#   summarise(contact_rate_we = sum(contact_rate))%>%
-#   left_join(moz_pop, by = c("participant_age" = "age_group"))%>%
-#   rename(par_pop = subtotal)%>%
-#   mutate(participant_age_mod = case_when(participant_age == "10-14y" ~ "10-19y",
-#                                   participant_age == "15-19y" ~ "10-19y",
-#                                   participant_age == "20-24y" ~ "20-29y",
-#                                   participant_age == "25-29y" ~ "20-29y",
-#                                   participant_age == "30-34y" ~ "30-39y",
-#                                   participant_age == "35-39y" ~ "30-39y",
-#                                   participant_age == "40-44y" ~ "40-59y",
-#                                   participant_age == "45-49y" ~ "40-59y",
-#                                   participant_age == "50-54y" ~ "40-59y",
-#                                   participant_age == "55-59y" ~ "40-59y",
-#                                   participant_age == "60-64y" ~ "60+y",
-#                                   participant_age == "65-69y" ~ "60+y",
-#                                   participant_age == "70-74y" ~ "60+y",
-#                                   participant_age == "75+y" ~ "60+y",
-#                                   TRUE ~ participant_age))%>%
-#   group_by(participant_age_mod, contact_age_mod)%>%
-#   summarise(contact_rate_we = sum(contact_rate_we*par_pop)/sum(par_pop))%>%
-#   mutate(participant_age_mod = factor(participant_age_mod, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
-#          contact_age_mod = factor(contact_age_mod, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))%>%
-#   rename(participant_age = participant_age_mod,
-#          contact_age = contact_age_mod)
-# 
-# # Plot matrix
-# p_moz_o  %>%
-#   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(contact_rate_we, 8.5))) +
-#   theme(legend.position = "bottom",
-#         axis.text.x = element_text(size = 7)) +
-#   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
-#   geom_tile(color = "white", show.legend = FALSE,
-#             lwd = 1.5,
-#             linetype = 1) +
-#   geom_shadowtext(aes(label = round(contact_rate_we, digits = 1)), 
-#                   color = "black", 
-#                   bg.color = "white", 
-#                   size = 3, 
-#                   bg.r = 0.1) +
-#   xlab("") +
-#   ylab("") +
-#   scale_x_discrete(labels = label_wrap(10)) -> p.mat.mo
-# 
-# # GlobalMix data
-# mo.co.pa.counts.7 <-  full_join(moz_contact, moz_participant, 
-#                               by = c("rec_id", "study_site")) %>%
-#   mutate(contact = ifelse(is.na(survey_date), 0, 1))%>%
-#   mutate(participant_age = case_when(participant_age == "<6mo" ~ "0-4y",
-#                                      participant_age == "6-11mo" ~ "0-4y",
-#                                      participant_age == "1-4y" ~ "0-4y",
-#                                      TRUE ~ participant_age),
-#          participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")),
-#          contact_age = case_when(contact_age == "<6mo" ~ "0-4y",
-#                                  contact_age == "6-11mo" ~ "0-4y",
-#                                  contact_age == "1-4y" ~ "0-4y",
-#                                      TRUE ~ contact_age),
-#          contact_age = factor(contact_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))
-# 
-# # Step 1. Create denominator datasets (rural, urban overall)
-# moz_participant%>%
-#   mutate(participant_age = case_when(participant_age == "<6mo" ~ "0-4y",
-#                                      participant_age == "6-11mo" ~ "0-4y",
-#                                      participant_age == "1-4y" ~ "0-4y",
-#                                      TRUE ~ participant_age),
-#          participant_age = factor(participant_age, levels = c("0-4y", "5-9y", "10-19y", "20-29y", "30-39y", "40-59y", "60+y")))%>%
-#   count(participant_age) %>%
-#   filter(!is.na(participant_age)) -> o.denoms.byage.mo.7
-# 
-# # Create all combinations of age-age categories
-# o.denoms.byage.mo.7 %>% 
-#   tidyr::expand(participant_age, participant_age) %>%
-#   setNames(c("participant_age", "contact_age")) -> allagecombs.7
-# 
-# #create dfs for contact rate calculation, which include denominators for each age group
-# mo.co.pa.counts.7  %>%
-#   group_by(participant_age, contact_age) %>%
-#   count(participant_age, contact_age, name = "num_contacts") %>%
-#   right_join(allagecombs.7, by=c("participant_age", "contact_age"))  %>%
-#   left_join(o.denoms.byage.mo.7, by="participant_age") %>%
-#   mutate(num_contacts = num_contacts/2,
-#          num_contacts = replace_na(num_contacts, 0)) %>%
-#   arrange(participant_age, contact_age) %>%
-#   mutate(c.rate = (num_contacts) / n) -> mo.co.pa.counts.formatrix.o.7
-# 
-# # Step 2. Adjust for reciprocity
-# adjust_for_reciprocity(mo.co.pa.counts.formatrix.o.7, o.denoms.byage.mo.7, 7) -> mo.co.pa.counts.formatrix.o.sym.7
-# 
-# # Step 3. Plot matrices
-# mo.co.pa.counts.formatrix.o.sym.7  %>%  
-#   subset(!is.na(contact_age)) %>%
-#   ggplot(aes(x = participant_age, y = contact_age, fill = pmin(c.rate.sym, 3.5))) +
-#   theme(legend.position = "bottom",
-#         axis.text.x = element_text(size = 7)) +
-#   scale_fill_distiller(palette = "YlGnBu", direction = 1, name = "daily contacts") +
-#   geom_tile(color = "white", show.legend = FALSE,
-#             lwd = 1.5,
-#             linetype = 1) +
-#   geom_shadowtext(aes(label = round(c.rate.sym, digits = 1)), 
-#                   color = "black", 
-#                   bg.color = "white", 
-#                   size = 3, 
-#                   bg.r = 0.1) +
-#   xlab("") +
-#   ylab("") +
-#   scale_x_discrete(labels = label_wrap(10)) -> mat.mo.o.sym.7
