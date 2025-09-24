@@ -1120,12 +1120,12 @@ pak.values$Country <- "Pakistan"
 
 all.values <- rbind(gt.values, ind.values, moz.values, pak.values)
 
-all.plot <- ggplot(all.values, aes(x = Category, y = Value, fill = Site)) +
+all.plot <- ggplot(all.values, aes(x = Category, y = Value*100, fill = Site)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~ Country, scales = "free_x") +
   labs(
     x = NULL,
-    y = "Cumulative Incidence"
+    y = "Cumulative Incidence (%)"
   ) +
   scale_fill_manual(values = c("GlobalMix, rural" = "aquamarine4", "GlobalMix, urban" = "steelblue3", "Prem et al., 2021" = "sienna")) +
   theme_minimal() +
@@ -1135,8 +1135,7 @@ all.plot <- ggplot(all.values, aes(x = Category, y = Value, fill = Site)) +
     axis.title = element_text(size = 7),
     legend.title = element_text(size = 7),
     legend.text = element_text(size = 7)
-  ) +
-  ylim(0, 1)
+  )
 
 
 # ---- epidemic peak and timing

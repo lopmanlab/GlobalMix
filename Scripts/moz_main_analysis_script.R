@@ -606,7 +606,7 @@ moz_age_plot <- ggplot(moz_age_table, aes(x = age_midpoint, y = contact_rate, co
   ylim(0,25)+
   labs(title = "Mozambique",
        color = "Dataset") +
-  ylab("Contact Rate")+
+  ylab("Mean daily contact rate")+
   scale_color_manual(values = c("Prem et al., 2021" = "sienna", "GlobalMix, rural" = 'aquamarine4', "GlobalMix, urban" = "steelblue3"))+
   theme_minimal()+
   theme(axis.text = element_text(size = 7),
