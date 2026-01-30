@@ -35,9 +35,10 @@ Folders are arranged as follows.
 5. Other
 6. Scripts
 7. Codebook
+8. Questionnaires
 
 Each country folder contains 'participants' and 'contact diary' datasets, which contain information about the study participants and their reported contacts, respectively. The Other folder contains the clean datasets used for the analysis.
-The scripts folder has scripts used for the analysis of the "Characterizing social behavior relevant for infectious disease transmission in four countries, 2021-2023". The Codebook folder contains codebooks explaining the variables in the datasets.
+The scripts folder has scripts used for the analysis of the "Characterizing social behavior relevant for infectious disease transmission in four countries, 2021-2023". The Codebook folder contains codebooks explaining the variables in the datasets, and the Questionnaire folder contains the survey questionnaires used in the study.
 
 The participant and contact diary datasets are named as follows;
 - country-code_participant_data_aim.RDS
